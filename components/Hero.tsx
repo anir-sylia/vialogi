@@ -16,9 +16,11 @@ type Place = {
 
 type HeroProps = {
   initialQuery?: string | null;
+  /** Total rows in Supabase `shipments` (home stat). */
+  totalShipments?: number;
 };
 
-export function Hero({ initialQuery = "" }: HeroProps) {
+export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
   const t = useTranslations("hero");
   const locale = useLocale();
   const router = useRouter();
@@ -194,28 +196,36 @@ export function Hero({ initialQuery = "" }: HeroProps) {
           id="network"
           className="mx-auto mt-20 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3"
         >
-          {[
-            { value: "2.4k+", label: t("statsLoads") },
-            { value: "860+", label: t("statsCarriers") },
-            { value: "120+", label: t("statsCities") },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-[var(--border)] bg-white px-6 py-8 text-center shadow-sm"
-            >
-              <div className="text-3xl font-bold text-[var(--brand)] sm:text-4xl">
-                {s.value}
-              </div>
-              <div className="mt-2 text-sm font-medium text-[var(--text-muted)]">
-                {s.label}
-              </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-white px-6 py-8 text-center shadow-sm">
+            <div className="text-3xl font-bold text-[var(--brand)] sm:text-4xl">
+              {totalShipments.toLocaleString(
+                locale === "ar" ? "ar-MA" : "fr-FR",
+              )}
             </div>
-          ))}
+            <div className="mt-2 text-sm font-medium text-[var(--text-muted)]">
+              {t("statsPublished")}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-white px-6 py-8 text-center shadow-sm">
+            <div className="text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+              {t("statsB2bBadge")}
+            </div>
+            <div className="mt-2 text-sm font-medium text-[var(--text-muted)]">
+              {t("statsB2bHint")}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-white px-6 py-8 text-center shadow-sm">
+            <div className="text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+              {t("statsMoroccoBadge")}
+            </div>
+            <div className="mt-2 text-sm font-medium text-[var(--text-muted)]">
+              {t("statsMoroccoHint")}
+            </div>
+          </div>
         </div>
 
         <div id="how" className="sr-only" aria-hidden />
         <div id="pricing" className="sr-only" aria-hidden />
-        <div id="loads" className="sr-only" aria-hidden />
         <div id="login" className="sr-only" aria-hidden />
       </div>
     </section>

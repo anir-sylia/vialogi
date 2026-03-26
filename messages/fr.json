@@ -19,9 +19,11 @@
     "searchHint": "Villes au Maroc (OpenStreetMap / Photon)",
     "ctaPrimary": "Voir les annonces",
     "ctaSecondary": "Découvrir la plateforme",
-    "statsLoads": "Annonces actives",
-    "statsCarriers": "Transporteurs",
-    "statsCities": "Villes couvertes"
+    "statsPublished": "Envois publiés (base de données)",
+    "statsB2bBadge": "B2B",
+    "statsB2bHint": "Annonces routières & logistique",
+    "statsMoroccoBadge": "MA",
+    "statsMoroccoHint": "Recherche & trajets Maroc"
   },
   "routePlanner": {
     "title": "Itinéraire au Maroc",
@@ -60,18 +62,22 @@
     "pricePlaceholder": "Ex. 4500",
     "submit": "Publier l’envoi",
     "submitting": "Publication…",
+    "mapSectionLabel": "Itinéraire",
+    "mapPlaceholder": "Saisissez l’origine et la destination puis choisissez une suggestion dans chaque liste — le tracé routier s’affichera ici.",
+    "routeCalculating": "Calcul du tracé routier…",
+    "routeDistanceKm": "Distance estimée (route) : {km} km",
     "errors": {
       "required_fields": "L’origine et la destination sont obligatoires.",
       "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
       "invalid_price": "Indiquez un prix valide (nombre positif ou zéro).",
       "unknown_error": "Une erreur est survenue. Réessayez.",
       "db": "Impossible d’enregistrer dans la base. Vérifiez Supabase et les droits RLS.",
-      "env": "Configuration Supabase manquante sur le serveur (variables d’environnement Vercel)."
+      "env": "Variables Supabase absentes : définissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY dans Vercel (Settings → Environment Variables) ou dans .env.local, puis redéployez."
     }
   },
   "shipments": {
     "heading": "Envois disponibles",
-    "subheading": "Les 6 envois les plus récents. Filtrez par ville avec la barre de recherche.",
+    "subheading": "Données en direct depuis Supabase. Sans recherche : les 6 derniers envois. Avec une ville : jusqu’à 50 annonces dont l’origine ou la destination correspond.",
     "cardRoute": "Trajet",
     "filteredBy": "Filtre : « {q} »",
     "empty": "Aucun envoi pour le moment.",
@@ -79,7 +85,10 @@
     "emptyHint": "Affinez la recherche ou publiez une nouvelle annonce.",
     "weight": "Poids",
     "price": "Prix",
-    "openChat": "Chat"
+    "openChat": "Chat",
+    "publishedToast": "Votre annonce a bien été publiée.",
+    "dismissToast": "Fermer",
+    "matchCount": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
   },
   "chat": {
     "back": "Retour",

@@ -7,8 +7,6 @@ type Props = {
   searchQuery: string | undefined;
 };
 
-const HOME_LIMIT = 6;
-
 function formatDate(iso: string, locale: string) {
   try {
     return new Intl.DateTimeFormat(locale === "ar" ? "ar-MA" : "fr-FR", {
@@ -22,7 +20,7 @@ function formatDate(iso: string, locale: string) {
 
 export async function ShipmentsSection({ locale, searchQuery }: Props) {
   const t = await getTranslations("shipments");
-  const shipments = await listShipments(searchQuery, { limit: HOME_LIMIT });
+  const shipments = await listShipments(searchQuery);
 
   return (
     <section
@@ -37,9 +35,14 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
           <p className="mt-1 text-[var(--text-muted)]">{t("subheading")}</p>
         </div>
         {searchQuery?.trim() ? (
-          <p className="text-sm font-medium text-[var(--brand)]">
-            {t("filteredBy", { q: searchQuery.trim() })}
-          </p>
+          <div className="text-end text-sm">
+            <p className="font-medium text-[var(--brand)]">
+              {t("filteredBy", { q: searchQuery.trim() })}
+            </p>
+            <p className="mt-0.5 text-[var(--text-muted)]">
+              {t("matchCount", { count: shipments.length })}
+            </p>
+          </div>
         ) : null}
       </div>
 

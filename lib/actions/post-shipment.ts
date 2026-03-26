@@ -3,7 +3,8 @@
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { createSupabaseAnonServerClient } from "@/lib/supabase";
+import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
+import { isSupabasePublicEnvConfigured } from "@/utils/supabase/env";
 
 function fail(
   locale: string,
@@ -47,9 +48,18 @@ export async function submitShipment(formData: FormData) {
     return fail(locale, "invalid_price");
   }
 
+  if (!isSupabasePublicEnvConfigured()) {
+    return fail(locale, "env");
+  }
+
   // Do not call redirect() inside try/catch — Next.js implements redirect via a
   // thrown error; catching it would turn real failures into `unknown_error`.
-  let insertError: { message: string } | null = null;
+  let insertError: {
+    message: string;
+    code?: string;
+    details?: string;
+    hint?: string;
+  } | null = null;
   try {
     const supabase = createSupabaseAnonServerClient();
     const { error } = await supabase.from("shipments").insert({
@@ -61,7 +71,12 @@ export async function submitShipment(formData: FormData) {
     if (error) insertError = error;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes("NEXT_PUBLIC_SUPABASE")) {
+    if (
+      msg.includes("NEXT_PUBLIC_SUPABASE_URL") ||
+      msg.includes("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY") ||
+      msg.includes("NEXT_PUBLIC_SUPABASE_ANON_KEY") ||
+      msg.includes("Missing NEXT_PUBLIC_SUPABASE")
+    ) {
       return fail(locale, "env");
     }
     console.error("submitShipment:", e);
@@ -69,9 +84,18 @@ export async function submitShipment(formData: FormData) {
   }
 
   if (insertError) {
-    console.error("submitShipment insert:", insertError.message);
+    console.error(
+      "submitShipment insert:",
+      insertError.message,
+      insertError.code,
+      insertError.details,
+      insertError.hint,
+    );
     return fail(locale, "db");
   }
 
-  return redirect({ href: "/", locale });
+  return redirect({
+    href: { pathname: "/", query: { posted: "1" } },
+    locale,
+  });
 }

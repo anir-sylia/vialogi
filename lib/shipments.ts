@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
 
 export type ShipmentRow = {
   id: string;
@@ -14,19 +14,27 @@ export function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
-const HOME_SHIPMENTS_LIMIT = 6;
+const DEFAULT_HOME_LIMIT = 6;
+const SEARCH_RESULTS_LIMIT = 50;
 
+/**
+ * Latest shipments from Supabase. With a search term, filters `origin` and
+ * `destination` with ILIKE and returns more rows.
+ */
 export async function listShipments(
   search: string | undefined | null,
   options?: { limit?: number },
 ) {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabaseAnonServerClient();
     const q = (search?.trim() ?? "")
       .replace(/,/g, " ")
       .replace(/"/g, "");
 
-    const limit = options?.limit ?? HOME_SHIPMENTS_LIMIT;
+    const hasSearch = q.length > 0;
+    const limit =
+      options?.limit ??
+      (hasSearch ? SEARCH_RESULTS_LIMIT : DEFAULT_HOME_LIMIT);
 
     let query = supabase
       .from("shipments")
@@ -34,7 +42,7 @@ export async function listShipments(
       .order("created_at", { ascending: false })
       .limit(limit);
 
-    if (q.length > 0) {
+    if (hasSearch) {
       const pattern = `%${escapeIlikePattern(q)}%`;
       query = query.or(
         `origin.ilike.${pattern},destination.ilike.${pattern}`,
@@ -44,7 +52,7 @@ export async function listShipments(
     const { data, error } = await query;
 
     if (error) {
-      console.error("listShipments:", error.message);
+      console.error("listShipments:", error.message, error.code, error.details);
       return [] as ShipmentRow[];
     }
 
@@ -55,9 +63,28 @@ export async function listShipments(
   }
 }
 
+/** Total rows in `shipments` (for home stats). */
+export async function countShipments(): Promise<number> {
+  try {
+    const supabase = createSupabaseAnonServerClient();
+    const { count, error } = await supabase
+      .from("shipments")
+      .select("*", { count: "exact", head: true });
+
+    if (error) {
+      console.error("countShipments:", error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (e) {
+    console.error("countShipments:", e);
+    return 0;
+  }
+}
+
 export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabaseAnonServerClient();
     const { data, error } = await supabase
       .from("shipments")
       .select("id, created_at, origin, destination, weight_kg, price")

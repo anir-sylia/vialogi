@@ -19,9 +19,11 @@
     "searchHint": "مدن المغرب (OpenStreetMap / Photon)",
     "ctaPrimary": "عرض الإعلانات",
     "ctaSecondary": "استكشف المنصة",
-    "statsLoads": "إعلانات نشطة",
-    "statsCarriers": "ناقلون",
-    "statsCities": "مدن مغطاة"
+    "statsPublished": "الشحنات المنشورة (قاعدة البيانات)",
+    "statsB2bBadge": "B2B",
+    "statsB2bHint": "إعلانات الطرق واللوجستيات",
+    "statsMoroccoBadge": "MA",
+    "statsMoroccoHint": "بحث ومسارات المغرب"
   },
   "routePlanner": {
     "title": "مسار داخل المغرب",
@@ -60,18 +62,22 @@
     "pricePlaceholder": "مثال: 4500",
     "submit": "نشر الشحنة",
     "submitting": "جاري النشر…",
+    "mapSectionLabel": "المسار",
+    "mapPlaceholder": "أدخل المنطلق والوجهة واختر اقتراحًا من كل قائمة — سيظهر مسار الطريق هنا.",
+    "routeCalculating": "جاري حساب مسار الطريق…",
+    "routeDistanceKm": "المسافة التقديرية (بالطريق): {km} كم",
     "errors": {
       "required_fields": "المنطلق والوجهة مطلوبان.",
       "invalid_weight": "أدخل وزنًا صالحًا (رقم أكبر من 0).",
       "invalid_price": "أدخل سعرًا صالحًا (رقم موجب أو صفر).",
       "unknown_error": "حدث خطأ. حاول مرة أخرى.",
       "db": "تعذر الحفظ في قاعدة البيانات. تحقق من Supabase وصلاحيات RLS.",
-      "env": "إعدادات Supabase غير موجودة على الخادم (متغيرات البيئة في Vercel)."
+      "env": "متغيرات Supabase ناقصة: عرّف NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY في Vercel (الإعدادات → Environment Variables) أو في .env.local ثم أعد النشر."
     }
   },
   "shipments": {
     "heading": "الشحنات المتاحة",
-    "subheading": "أحدث 6 شحنات. صفِّ حسب المدينة باستخدام شريط البحث.",
+    "subheading": "بيانات مباشرة من Supabase. بدون بحث: آخر 6 شحنات. مع مدينة: حتى 50 إعلانًا يطابق المنطلق أو الوجهة.",
     "cardRoute": "المسار",
     "filteredBy": "تصفية: « {q} »",
     "empty": "لا توجد شحنات حاليًا.",
@@ -79,7 +85,10 @@
     "emptyHint": "حسّن البحث أو انشر إعلانًا جديدًا.",
     "weight": "الوزن",
     "price": "السعر",
-    "openChat": "محادثة"
+    "openChat": "محادثة",
+    "publishedToast": "تم نشر إعلانك بنجاح.",
+    "dismissToast": "إغلاق",
+    "matchCount": "{count, plural, =0 {لا نتائج} one {# نتيجة} other {# نتائج}}"
   },
   "chat": {
     "back": "رجوع",
