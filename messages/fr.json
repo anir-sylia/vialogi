@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "title": "Vialogi — Logistique intelligente",
+    "description": "Connectez chargeurs et transporteurs. Publiez et trouvez des annonces de fret en temps réel."
+  },
+  "nav": {
+    "howItWorks": "Comment ça marche",
+    "network": "Réseau",
+    "pricing": "Tarifs",
+    "signIn": "Connexion",
+    "postAnnouncement": "Publier une annonce"
+  },
+  "hero": {
+    "badge": "Plateforme logistique B2B",
+    "title": "Le bon chargement, au bon endroit",
+    "subtitle": "Recherchez une ville pour voir les flux disponibles et publiez vos besoins de transport en quelques minutes.",
+    "searchLabel": "Ville ou région",
+    "searchPlaceholder": "Ex. Casablanca, Lyon, Marseille…",
+    "searchHint": "Suggestions via OpenStreetMap (Photon)",
+    "ctaPrimary": "Voir les annonces",
+    "ctaSecondary": "Découvrir la plateforme",
+    "statsLoads": "Annonces actives",
+    "statsCarriers": "Transporteurs",
+    "statsCities": "Villes couvertes"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "ar": "العربية"
+  },
+  "postPage": {
+    "title": "Publier une annonce",
+    "subtitle": "Cette section sera bientôt reliée à Supabase pour enregistrer vos offres et demandes de transport.",
+    "back": "Retour à l’accueil"
+  }
+}
