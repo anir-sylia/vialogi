@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 type Place = {
   id: string;
@@ -12,10 +12,16 @@ type Place = {
   type: string;
 };
 
-export function Hero() {
+type HeroProps = {
+  initialQuery?: string | null;
+};
+
+export function Hero({ initialQuery = "" }: HeroProps) {
   const t = useTranslations("hero");
   const locale = useLocale();
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [query, setQuery] = useState(initialQuery ?? "");
   const [places, setPlaces] = useState<Place[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,6 +63,29 @@ export function Hero() {
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
+
+  useEffect(() => {
+    setQuery(initialQuery ?? "");
+  }, [initialQuery]);
+
+  function scrollToLoads() {
+    requestAnimationFrame(() => {
+      document.getElementById("loads")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
+  function runSearch(next: string) {
+    setQuery(next);
+    const q = next.trim();
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+    scrollToLoads();
+  }
 
   return (
     <section className="relative overflow-hidden">
@@ -118,7 +147,7 @@ export function Hero() {
                       type="button"
                       className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start text-sm transition-colors hover:bg-[var(--surface-muted)]"
                       onClick={() => {
-                        setQuery(
+                        runSearch(
                           [p.name, p.state, p.country]
                             .filter(Boolean)
                             .join(", "),
@@ -144,12 +173,13 @@ export function Hero() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-          <Link
-            href="/#loads"
+          <button
+            type="button"
+            onClick={() => runSearch(query)}
             className="inline-flex w-full items-center justify-center rounded-xl bg-[var(--brand)] px-8 py-3.5 text-base font-semibold text-white shadow-md transition-opacity hover:opacity-90 sm:w-auto"
           >
             {t("ctaPrimary")}
-          </Link>
+          </button>
           <Link
             href="/#how"
             className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border)] bg-white px-8 py-3.5 text-base font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-muted)] sm:w-auto"

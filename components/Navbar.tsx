@@ -67,13 +67,15 @@ export function Navbar() {
           </Link>
           <LanguageSwitcher />
           <Link
-            href="/post"
+            href={{ pathname: "/post" }}
+            prefetch={true}
             className="hidden rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
           >
             {t("postAnnouncement")}
           </Link>
           <Link
-            href="/post"
+            href={{ pathname: "/post" }}
+            prefetch={true}
             className="inline-flex rounded-lg bg-[var(--brand)] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:hidden"
           >
             +
@@ -117,7 +119,8 @@ export function Navbar() {
         <div className="border-t border-[var(--border)] bg-[var(--header-bg)] px-4 py-4 md:hidden">
           <div className="flex flex-col gap-4">{links}</div>
           <Link
-            href="/post"
+            href={{ pathname: "/post" }}
+            prefetch={true}
             className="mt-4 flex w-full items-center justify-center rounded-lg bg-[var(--brand)] py-3 text-sm font-semibold text-white"
             onClick={() => setOpen(false)}
           >

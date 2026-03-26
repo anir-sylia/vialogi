@@ -29,8 +29,59 @@
     "ar": "العربية"
   },
   "postPage": {
-    "title": "Publier une annonce",
-    "subtitle": "Cette section sera bientôt reliée à Supabase pour enregistrer vos offres et demandes de transport.",
+    "title": "Publier une annonce de fret",
+    "subtitle": "Indiquez l’origine, la destination, le poids et le prix. Les envois apparaissent sur l’accueil ; le chat permettra d’échanger avec les transporteurs.",
     "back": "Retour à l’accueil"
+  },
+  "postForm": {
+    "origin": "Origine",
+    "originPlaceholder": "Ville, zone industrielle, entrepôt…",
+    "destination": "Destination",
+    "destinationPlaceholder": "Ville ou lieu de livraison",
+    "weight": "Poids (kg)",
+    "weightPlaceholder": "Ex. 1250",
+    "price": "Prix proposé (MAD)",
+    "pricePlaceholder": "Ex. 4500",
+    "submit": "Publier l’envoi",
+    "submitting": "Publication…",
+    "errors": {
+      "required_fields": "L’origine et la destination sont obligatoires.",
+      "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
+      "invalid_price": "Indiquez un prix valide (nombre positif ou zéro).",
+      "unknown_error": "Une erreur est survenue. Réessayez.",
+      "db": "Impossible d’enregistrer dans la base. Vérifiez Supabase et les droits RLS."
+    }
+  },
+  "shipments": {
+    "heading": "Envois disponibles",
+    "subheading": "Les 6 envois les plus récents. Filtrez par ville avec la barre de recherche.",
+    "cardRoute": "Trajet",
+    "filteredBy": "Filtre : « {q} »",
+    "empty": "Aucun envoi pour le moment.",
+    "emptyFiltered": "Aucun envoi ne correspond à cette recherche.",
+    "emptyHint": "Affinez la recherche ou publiez une nouvelle annonce.",
+    "weight": "Poids",
+    "price": "Prix",
+    "openChat": "Chat"
+  },
+  "chat": {
+    "back": "Retour",
+    "home": "Accueil",
+    "tripTitle": "Discussion livraison",
+    "mapPlaceholder": "Carte (intégration à venir)",
+    "shipmentId": "Envoi {id}…",
+    "eta": "ETA",
+    "statusOnline": "En ligne",
+    "messagesLabel": "Messages",
+    "demoNotice": "Démo — branchez Supabase Realtime ici",
+    "inputPlaceholder": "Écrire un message…",
+    "send": "Envoyer",
+    "mock": {
+      "driverName": "Transporteur",
+      "eta": "~45 min",
+      "driver1": "Bonjour, je peux prendre la charge demain matin. Confirmez l’accès quai ?",
+      "user1": "Oui, quai B2 de 8h à 12h.",
+      "driver2": "Parfait, j’envoie la confirmation sur la plateforme."
+    }
   }
 }

@@ -1,17 +1,51 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { createBrowserClient, createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 /**
- * Browser-safe Supabase client. Set NEXT_PUBLIC_SUPABASE_URL and
- * NEXT_PUBLIC_SUPABASE_ANON_KEY in `.env.local`.
+ * Supabase is configured exclusively via public env vars (safe for the browser):
+ * - `NEXT_PUBLIC_SUPABASE_URL`
+ * - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
  */
-export function createSupabaseBrowserClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
+const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const NEXT_PUBLIC_SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+function requireEnv() {
+  const url = NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!url || !anonKey) {
     throw new Error(
       "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
     );
   }
-  return createClient(supabaseUrl, supabaseAnonKey);
+  return { supabaseUrl: url, supabaseAnonKey: anonKey };
+}
+
+/** Client Components — anon key from env; picks up auth cookies when you add login. */
+export function createSupabaseBrowserClient() {
+  const { supabaseUrl, supabaseAnonKey } = requireEnv();
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}
+
+/** Server Components, Server Actions, Route Handlers — same env vars + Next.js cookies. */
+export async function createSupabaseServerClient() {
+  const { supabaseUrl, supabaseAnonKey } = requireEnv();
+  const cookieStore = await cookies();
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
+        } catch {
+          /* ignore when called from a Server Component that cannot set cookies */
+        }
+      },
+    },
+  });
 }
