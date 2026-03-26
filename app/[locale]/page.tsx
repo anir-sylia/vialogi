@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/Hero";
+import { MoroccoRoutePlanner } from "@/components/MoroccoRoutePlanner";
 import { ShipmentsSection } from "@/components/ShipmentsSection";
 
 type Props = {
@@ -18,6 +19,7 @@ export default async function HomePage({ params, searchParams }: Props) {
   return (
     <>
       <Hero initialQuery={q} />
+      <MoroccoRoutePlanner />
       <ShipmentsSection locale={locale} searchQuery={q} />
     </>
   );

@@ -3,7 +3,7 @@
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseAnonServerClient } from "@/lib/supabase";
 
 function fail(
   locale: string,
@@ -12,6 +12,7 @@ function fail(
     | "invalid_weight"
     | "invalid_price"
     | "db"
+    | "env"
     | "unknown_error",
 ) {
   return redirect({
@@ -46,22 +47,30 @@ export async function submitShipment(formData: FormData) {
     return fail(locale, "invalid_price");
   }
 
+  // Do not call redirect() inside try/catch — Next.js implements redirect via a
+  // thrown error; catching it would turn real failures into `unknown_error`.
+  let insertError: { message: string } | null = null;
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabaseAnonServerClient();
     const { error } = await supabase.from("shipments").insert({
       origin,
       destination,
       weight_kg: weight,
       price,
     });
-
-    if (error) {
-      console.error("submitShipment insert:", error.message);
-      return fail(locale, "db");
-    }
+    if (error) insertError = error;
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("NEXT_PUBLIC_SUPABASE")) {
+      return fail(locale, "env");
+    }
     console.error("submitShipment:", e);
     return fail(locale, "unknown_error");
+  }
+
+  if (insertError) {
+    console.error("submitShipment insert:", insertError.message);
+    return fail(locale, "db");
   }
 
   return redirect({ href: "/", locale });

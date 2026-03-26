@@ -10,6 +10,8 @@ type Place = {
   country: string;
   state: string;
   type: string;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 type HeroProps = {
@@ -36,7 +38,7 @@ export function Hero({ initialQuery = "" }: HeroProps) {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/places?q=${encodeURIComponent(q)}&lang=${locale}`,
+          `/api/places?q=${encodeURIComponent(q)}&lang=${locale}&country=ma`,
         );
         const data = (await res.json()) as { places?: Place[] };
         setPlaces(data.places ?? []);

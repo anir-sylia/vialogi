@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { createBrowserClient, createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -27,7 +28,17 @@ export function createSupabaseBrowserClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
-/** Server Components, Server Actions, Route Handlers — same env vars + Next.js cookies. */
+/**
+ * Server Actions / API sans session — même clé `anon`, sans `cookies()`.
+ * À utiliser pour insert/lecture anonymes ; évite les erreurs fréquentes avec
+ * `createServerClient` + `cookies()` dans certaines Server Actions (ex. Vercel).
+ */
+export function createSupabaseAnonServerClient() {
+  const { supabaseUrl, supabaseAnonKey } = requireEnv();
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+/** Server Components, Route Handlers — env + Next.js cookies (sessions / auth). */
 export async function createSupabaseServerClient() {
   const { supabaseUrl, supabaseAnonKey } = requireEnv();
   const cookieStore = await cookies();

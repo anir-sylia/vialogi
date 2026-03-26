@@ -15,13 +15,29 @@
     "title": "Le bon chargement, au bon endroit",
     "subtitle": "Recherchez une ville pour voir les flux disponibles et publiez vos besoins de transport en quelques minutes.",
     "searchLabel": "Ville ou région",
-    "searchPlaceholder": "Ex. Casablanca, Lyon, Marseille…",
-    "searchHint": "Suggestions via OpenStreetMap (Photon)",
+    "searchPlaceholder": "Ex. Rabat, Casablanca, Marrakech…",
+    "searchHint": "Villes au Maroc (OpenStreetMap / Photon)",
     "ctaPrimary": "Voir les annonces",
     "ctaSecondary": "Découvrir la plateforme",
     "statsLoads": "Annonces actives",
     "statsCarriers": "Transporteurs",
     "statsCities": "Villes couvertes"
+  },
+  "routePlanner": {
+    "title": "Itinéraire au Maroc",
+    "subtitle": "Choisissez deux villes : la carte affiche le trajet routier (ou une ligne directe) et la distance en kilomètres.",
+    "origin": "Départ",
+    "destination": "Arrivée",
+    "originPlaceholder": "Ex. Rabat",
+    "destinationPlaceholder": "Ex. Marrakech",
+    "pickTwo": "Sélectionnez une ville dans chaque liste pour afficher la carte.",
+    "calculating": "Calcul de l’itinéraire…",
+    "distance": "Distance : {km} km",
+    "duration": "Durée estimée (routage) : ~{min} min",
+    "modeRoad": "Tracé : route (OpenStreetMap / OSRM)",
+    "modeStraight": "Tracé : ligne directe (distance à vol d’oiseau)",
+    "mapEmpty": "La carte s’affichera ici après le choix des deux villes.",
+    "mapAria": "Carte de l’itinéraire"
   },
   "language": {
     "label": "Langue",
@@ -49,7 +65,8 @@
       "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
       "invalid_price": "Indiquez un prix valide (nombre positif ou zéro).",
       "unknown_error": "Une erreur est survenue. Réessayez.",
-      "db": "Impossible d’enregistrer dans la base. Vérifiez Supabase et les droits RLS."
+      "db": "Impossible d’enregistrer dans la base. Vérifiez Supabase et les droits RLS.",
+      "env": "Configuration Supabase manquante sur le serveur (variables d’environnement Vercel)."
     }
   },
   "shipments": {

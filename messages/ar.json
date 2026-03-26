@@ -15,13 +15,29 @@
     "title": "الشحنة المناسبة، في المكان المناسب",
     "subtitle": "ابحث عن مدينة لمعرفة التدفقات المتاحة وانشر احتياجاتك للنقل في دقائق.",
     "searchLabel": "المدينة أو المنطقة",
-    "searchPlaceholder": "مثال: الدار البيضاء، ليون، مرسيليا…",
-    "searchHint": "اقتراحات عبر OpenStreetMap (Photon)",
+    "searchPlaceholder": "مثال: الرباط، الدار البيضاء، مراكش…",
+    "searchHint": "مدن المغرب (OpenStreetMap / Photon)",
     "ctaPrimary": "عرض الإعلانات",
     "ctaSecondary": "استكشف المنصة",
     "statsLoads": "إعلانات نشطة",
     "statsCarriers": "ناقلون",
     "statsCities": "مدن مغطاة"
+  },
+  "routePlanner": {
+    "title": "مسار داخل المغرب",
+    "subtitle": "اختر مدينتين: تظهر الخريطة المسار على الطريق (أو خطًا مباشرًا) والمسافة بالكيلومتر.",
+    "origin": "انطلاق",
+    "destination": "وصول",
+    "originPlaceholder": "مثال: الرباط",
+    "destinationPlaceholder": "مثال: مراكش",
+    "pickTwo": "اختر مدينة من كل قائمة لعرض الخريطة.",
+    "calculating": "جاري حساب المسار…",
+    "distance": "المسافة: {km} كم",
+    "duration": "المدة التقديرية (الطريق): ~{min} د",
+    "modeRoad": "المسار: طريق (OpenStreetMap / OSRM)",
+    "modeStraight": "مسار: خط مباشر (مسافة جوية)",
+    "mapEmpty": "ستظهر الخريطة هنا بعد اختيار المدينتين.",
+    "mapAria": "خريطة المسار"
   },
   "language": {
     "label": "اللغة",
@@ -49,7 +65,8 @@
       "invalid_weight": "أدخل وزنًا صالحًا (رقم أكبر من 0).",
       "invalid_price": "أدخل سعرًا صالحًا (رقم موجب أو صفر).",
       "unknown_error": "حدث خطأ. حاول مرة أخرى.",
-      "db": "تعذر الحفظ في قاعدة البيانات. تحقق من Supabase وصلاحيات RLS."
+      "db": "تعذر الحفظ في قاعدة البيانات. تحقق من Supabase وصلاحيات RLS.",
+      "env": "إعدادات Supabase غير موجودة على الخادم (متغيرات البيئة في Vercel)."
     }
   },
   "shipments": {

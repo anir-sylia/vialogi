@@ -14,6 +14,7 @@ const errorCodes = [
   "invalid_weight",
   "invalid_price",
   "db",
+  "env",
   "unknown_error",
 ] as const;
 
