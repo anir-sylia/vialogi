@@ -92,7 +92,7 @@ export function SignupForm({ locale, action }: Props) {
         <label htmlFor="phone" className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
           {t("phone")}
         </label>
-        <div className="flex">
+        <div className="flex" dir="ltr">
           <span className="inline-flex items-center rounded-l-xl border border-r-0 border-[var(--border)] bg-[var(--surface-muted)] px-3.5 text-sm font-semibold text-[var(--text-muted)] select-none">
             +212
           </span>
