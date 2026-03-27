@@ -23,10 +23,11 @@ const inputCls =
 
 type Props = {
   locale: string;
+  nextPath?: string;
   action: (formData: FormData) => void;
 };
 
-export function SignupForm({ locale, action }: Props) {
+export function SignupForm({ locale, nextPath, action }: Props) {
   const t = useTranslations("auth");
   const [role, setRole] = useState<"client" | "transporteur">("client");
 
@@ -41,6 +42,7 @@ export function SignupForm({ locale, action }: Props) {
   return (
     <form action={handleSubmit} className="mt-8 space-y-5">
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="next" value={nextPath ?? ""} />
       <input type="hidden" name="role" value={role} />
 
       <div>

@@ -11,12 +11,21 @@ function getLocale(formData: FormData): string {
   return hasLocale(routing.locales, raw) ? raw : routing.defaultLocale;
 }
 
+function getSafeNextPath(formData: FormData): string | null {
+  const raw = String(formData.get("next") ?? "").trim();
+  if (!raw) return null;
+  if (!raw.startsWith("/")) return null;
+  if (raw.startsWith("//")) return null;
+  return raw;
+}
+
 export async function signUp(formData: FormData) {
   const locale = getLocale(formData);
+  const nextPath = getSafeNextPath(formData);
 
   if (!isSupabasePublicEnvConfigured()) {
     return redirect({
-      href: { pathname: "/signup", query: { error: "env" } },
+      href: { pathname: "/signup", query: { error: "env", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
@@ -31,21 +40,21 @@ export async function signUp(formData: FormData) {
 
   if (!email || !password || !role || !firstName || !lastName || !phone) {
     return redirect({
-      href: { pathname: "/signup", query: { error: "required_fields" } },
+      href: { pathname: "/signup", query: { error: "required_fields", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
 
   if (role !== "client" && role !== "transporteur") {
     return redirect({
-      href: { pathname: "/signup", query: { error: "invalid_role" } },
+      href: { pathname: "/signup", query: { error: "invalid_role", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
 
   if (password.length < 6) {
     return redirect({
-      href: { pathname: "/signup", query: { error: "weak_password" } },
+      href: { pathname: "/signup", query: { error: "weak_password", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
@@ -71,7 +80,7 @@ export async function signUp(formData: FormData) {
       });
       if (loginErr) {
         return redirect({
-          href: { pathname: "/signup", query: { error: "email_taken" } },
+          href: { pathname: "/signup", query: { error: "email_taken", ...(nextPath ? { next: nextPath } : {}) } },
           locale,
         });
       }
@@ -94,11 +103,11 @@ export async function signUp(formData: FormData) {
           });
         }
       }
-      return redirect({ href: "/", locale });
+      return redirect({ href: nextPath ?? "/", locale });
     }
 
     return redirect({
-      href: { pathname: "/signup", query: { error: code } },
+      href: { pathname: "/signup", query: { error: code, ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
@@ -115,20 +124,21 @@ export async function signUp(formData: FormData) {
   if (profileError) {
     console.error("signUp profile error:", profileError.message);
     return redirect({
-      href: { pathname: "/signup", query: { error: "profile_error" } },
+      href: { pathname: "/signup", query: { error: "profile_error", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
 
-  return redirect({ href: "/", locale });
+  return redirect({ href: nextPath ?? "/", locale });
 }
 
 export async function signIn(formData: FormData) {
   const locale = getLocale(formData);
+  const nextPath = getSafeNextPath(formData);
 
   if (!isSupabasePublicEnvConfigured()) {
     return redirect({
-      href: { pathname: "/login", query: { error: "env" } },
+      href: { pathname: "/login", query: { error: "env", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
@@ -138,7 +148,7 @@ export async function signIn(formData: FormData) {
 
   if (!email || !password) {
     return redirect({
-      href: { pathname: "/login", query: { error: "required_fields" } },
+      href: { pathname: "/login", query: { error: "required_fields", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
@@ -153,12 +163,12 @@ export async function signIn(formData: FormData) {
   if (error) {
     console.error("signIn error:", error.message);
     return redirect({
-      href: { pathname: "/login", query: { error: "invalid_credentials" } },
+      href: { pathname: "/login", query: { error: "invalid_credentials", ...(nextPath ? { next: nextPath } : {}) } },
       locale,
     });
   }
 
-  return redirect({ href: "/", locale });
+  return redirect({ href: nextPath ?? "/", locale });
 }
 
 export async function signOut(formData: FormData) {

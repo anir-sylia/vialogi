@@ -22,15 +22,17 @@ const inputCls =
 
 type Props = {
   locale: string;
+  nextPath?: string;
   action: (formData: FormData) => void;
 };
 
-export function LoginForm({ locale, action }: Props) {
+export function LoginForm({ locale, nextPath, action }: Props) {
   const t = useTranslations("auth");
 
   return (
     <form action={action} className="mt-8 space-y-5">
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="next" value={nextPath ?? ""} />
 
       <div>
         <label htmlFor="email" className="mb-2 block text-sm font-medium text-[var(--text-primary)]">

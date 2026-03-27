@@ -6,7 +6,7 @@ import { LoginForm } from "./login-form";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string | string[] }>;
+  searchParams: Promise<{ error?: string | string[]; next?: string | string[] }>;
 };
 
 export default async function LoginPage({ params, searchParams }: Props) {
@@ -14,6 +14,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const sp = await searchParams;
   const errorCode = Array.isArray(sp?.error) ? sp.error[0] : sp?.error;
+  const nextPath = Array.isArray(sp?.next) ? sp.next[0] : sp?.next;
 
   const t = await getTranslations("auth");
   const te = await getTranslations("auth.errors");
@@ -49,12 +50,16 @@ export default async function LoginPage({ params, searchParams }: Props) {
         </div>
       ) : null}
 
-      <LoginForm locale={locale} action={signIn} />
+      <LoginForm locale={locale} nextPath={nextPath} action={signIn} />
 
       <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
         {t("noAccount")}{" "}
         <Link
-          href="/signup"
+          href={
+            nextPath
+              ? { pathname: "/signup", query: { next: nextPath } }
+              : "/signup"
+          }
           className="font-medium text-[var(--brand)] hover:underline"
         >
           {t("signupLink")}
