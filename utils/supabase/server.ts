@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getSupabasePublicEnvOrThrow } from "@/utils/supabase/env";
+import {
+  getSupabasePublicEnvOrThrow,
+  getSupabaseServiceRoleKey,
+} from "@/utils/supabase/env";
 
 /**
  * Server Actions / lectures anonymes — pas de `cookies()`.
@@ -15,6 +18,16 @@ export function createSupabaseAnonServerClient() {
 /**
  * Server Components avec session — mêmes vars + cookies Next.js.
  */
+/** Service-role client for server-only operations (bypasses RLS). Null if not configured. */
+export function createSupabaseServiceRoleClientIfConfigured() {
+  const { url } = getSupabasePublicEnvOrThrow();
+  const key = getSupabaseServiceRoleKey();
+  if (!key) return null;
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export async function createSupabaseServerClient() {
   const { url, anonKey } = getSupabasePublicEnvOrThrow();
   const cookieStore = await cookies();

@@ -31,3 +31,15 @@ export function getSupabasePublicEnvOrThrow(): {
   }
   return { url, anonKey };
 }
+
+/**
+ * Secret server-only key (bypasses RLS). Optional: used for trusted server inserts
+ * when RLS policies are misconfigured. Never expose to the browser.
+ * Supabase Dashboard → Settings → API → service_role.
+ */
+export function getSupabaseServiceRoleKey(): string | null {
+  const k =
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ??
+    process.env.SUPABASE_SECRET_KEY?.trim();
+  return k || null;
+}

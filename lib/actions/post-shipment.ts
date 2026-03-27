@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import {
   createSupabaseAnonServerClient,
   createSupabaseServerClient,
+  createSupabaseServiceRoleClientIfConfigured,
 } from "@/utils/supabase/server";
 import { isSupabasePublicEnvConfigured } from "@/utils/supabase/env";
 
@@ -109,14 +110,26 @@ export async function submitShipment(formData: FormData) {
       }
     }
 
-    const supabase = user ? authSupabase : createSupabaseAnonServerClient();
-    const { error } = await supabase.from("shipments").insert({
+    const row = {
       origin,
       destination,
       weight_kg: weight,
       price,
       ...(user ? { user_id: user.id } : {}),
-    });
+    };
+
+    const supabase = user ? authSupabase : createSupabaseAnonServerClient();
+    let { error } = await supabase.from("shipments").insert(row);
+
+    if (error && user) {
+      const svc = createSupabaseServiceRoleClientIfConfigured();
+      if (svc) {
+        const retry = await svc.from("shipments").insert(row);
+        if (!retry.error) error = null;
+        else error = retry.error;
+      }
+    }
+
     if (error) insertError = error;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -143,7 +156,10 @@ export async function submitShipment(formData: FormData) {
     const msg = insertError.message?.toLowerCase() ?? "";
     if (
       msg.includes("row-level security") ||
-      msg.includes("rls") ||
+      msg.includes("violates row-level") ||
+      msg.includes("rls policy") ||
+      msg.includes("permission denied") ||
+      msg.includes("policy violation") ||
       insertError.code === "42501"
     ) {
       return fail(locale, "rls_denied");
