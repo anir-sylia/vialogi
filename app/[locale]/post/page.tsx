@@ -15,6 +15,8 @@ const errorCodes = [
   "invalid_weight",
   "invalid_price",
   "db",
+  "profile_required",
+  "rls_denied",
   "env",
   "unknown_error",
 ] as const;
@@ -39,7 +41,8 @@ export default async function PostPage({ params, searchParams }: Props) {
   }
 
   const profile = await getProfile(user.id);
-  if (!profile || profile.role !== "client") {
+  const canPost = profile && ["client", "transporteur", "admin"].includes(profile.role);
+  if (!canPost) {
     return redirect({ href: { pathname: "/signup", query: { next: "/post" } }, locale });
   }
 

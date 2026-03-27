@@ -1,5 +1,6 @@
 "use server";
 
+import type { User } from "@supabase/supabase-js";
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -16,6 +17,8 @@ function fail(
     | "invalid_weight"
     | "invalid_price"
     | "db"
+    | "profile_required"
+    | "rls_denied"
     | "env"
     | "unknown_error",
 ) {
@@ -23,6 +26,38 @@ function fail(
     href: { pathname: "/post", query: { e: code } },
     locale,
   });
+}
+
+/** Create a minimal profile if auth user exists but `profiles` row is missing (FK + RLS need it). */
+async function ensureUserProfile(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  user: User,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (data) return true;
+
+  const meta = user.user_metadata as Record<string, unknown> | undefined;
+  const first =
+    typeof meta?.first_name === "string" ? meta.first_name : "Utilisateur";
+  const last = typeof meta?.last_name === "string" ? meta.last_name : "-";
+  const phone = typeof meta?.phone === "string" ? meta.phone : "+212000000000";
+
+  const { error } = await supabase.from("profiles").insert({
+    id: user.id,
+    role: "client",
+    first_name: first.slice(0, 100),
+    last_name: last.slice(0, 100),
+    phone: phone.slice(0, 32),
+  });
+  if (error) {
+    console.error("ensureUserProfile insert:", error.message, error.code);
+    return false;
+  }
+  return true;
 }
 
 /** Inserts a row into `public.shipments` using the Supabase server client (env anon key). */
@@ -67,6 +102,13 @@ export async function submitShipment(formData: FormData) {
     const authSupabase = await createSupabaseServerClient();
     const { data: { user } } = await authSupabase.auth.getUser();
 
+    if (user) {
+      const ok = await ensureUserProfile(authSupabase, user);
+      if (!ok) {
+        return fail(locale, "profile_required");
+      }
+    }
+
     const supabase = user ? authSupabase : createSupabaseAnonServerClient();
     const { error } = await supabase.from("shipments").insert({
       origin,
@@ -98,6 +140,17 @@ export async function submitShipment(formData: FormData) {
       insertError.details,
       insertError.hint,
     );
+    const msg = insertError.message?.toLowerCase() ?? "";
+    if (
+      msg.includes("row-level security") ||
+      msg.includes("rls") ||
+      insertError.code === "42501"
+    ) {
+      return fail(locale, "rls_denied");
+    }
+    if (insertError.code === "23503") {
+      return fail(locale, "profile_required");
+    }
     return fail(locale, "db");
   }
 
