@@ -30,12 +30,12 @@ export function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
-const DEFAULT_HOME_LIMIT = 6;
+const DEFAULT_HOME_LIMIT = 20;
 const SEARCH_RESULTS_LIMIT = 50;
 
 /**
  * Latest shipments from Supabase. With a search term, filters `origin` and
- * `destination` with ILIKE and returns more rows.
+ * `origin` with ILIKE and returns more rows.
  */
 export async function listShipments(
   search: string | undefined | null,
@@ -61,9 +61,7 @@ export async function listShipments(
 
     if (hasSearch) {
       const pattern = `%${escapeIlikePattern(q)}%`;
-      query = query.or(
-        `origin.ilike.${pattern},destination.ilike.${pattern}`,
-      );
+      query = query.ilike("origin", pattern);
     }
 
     const { data, error } = await query;

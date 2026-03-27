@@ -121,7 +121,7 @@
   },
   "shipments": {
     "heading": "Envois disponibles",
-    "subheading": "Données en direct depuis Supabase. Sans recherche : les 6 derniers envois. Avec une ville : jusqu'à 50 annonces dont l'origine ou la destination correspond.",
+    "subheading": "Données en direct depuis Supabase. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
     "cardRoute": "Trajet",
     "filteredBy": "Filtre : « {q} »",
     "empty": "Aucun envoi pour le moment.",
