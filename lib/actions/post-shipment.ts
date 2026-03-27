@@ -9,7 +9,10 @@ import {
   createSupabaseServerClient,
   createSupabaseServiceRoleClientIfConfigured,
 } from "@/utils/supabase/server";
-import { isSupabasePublicEnvConfigured } from "@/utils/supabase/env";
+import {
+  getSupabaseServiceRoleKey,
+  isSupabasePublicEnvConfigured,
+} from "@/utils/supabase/env";
 
 function fail(
   locale: string,
@@ -20,6 +23,7 @@ function fail(
     | "db"
     | "profile_required"
     | "rls_denied"
+    | "missing_secret"
     | "env"
     | "unknown_error",
 ) {
@@ -31,10 +35,10 @@ function fail(
 
 /** Create a minimal profile if auth user exists but `profiles` row is missing (FK + RLS need it). */
 async function ensureUserProfile(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  authSupabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   user: User,
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data } = await authSupabase
     .from("profiles")
     .select("id")
     .eq("id", user.id)
@@ -47,13 +51,26 @@ async function ensureUserProfile(
   const last = typeof meta?.last_name === "string" ? meta.last_name : "-";
   const phone = typeof meta?.phone === "string" ? meta.phone : "+212000000000";
 
-  const { error } = await supabase.from("profiles").insert({
+  const profileRow = {
     id: user.id,
-    role: "client",
+    role: "client" as const,
     first_name: first.slice(0, 100),
     last_name: last.slice(0, 100),
     phone: phone.slice(0, 32),
-  });
+  };
+
+  let { error } = await authSupabase.from("profiles").insert(profileRow);
+  if (error) {
+    const svc = createSupabaseServiceRoleClientIfConfigured();
+    if (svc) {
+      const r2 = await svc.from("profiles").insert(profileRow);
+      if (!r2.error) return true;
+      error = r2.error;
+    }
+  } else {
+    return true;
+  }
+
   if (error) {
     console.error("ensureUserProfile insert:", error.message, error.code);
     return false;
@@ -99,9 +116,11 @@ export async function submitShipment(formData: FormData) {
     details?: string;
     hint?: string;
   } | null = null;
+  let authedUser: User | null = null;
   try {
     const authSupabase = await createSupabaseServerClient();
     const { data: { user } } = await authSupabase.auth.getUser();
+    authedUser = user ?? null;
 
     if (user) {
       const ok = await ensureUserProfile(authSupabase, user);
@@ -118,19 +137,21 @@ export async function submitShipment(formData: FormData) {
       ...(user ? { user_id: user.id } : {}),
     };
 
-    const supabase = user ? authSupabase : createSupabaseAnonServerClient();
-    let { error } = await supabase.from("shipments").insert(row);
-
-    if (error && user) {
+    if (user) {
       const svc = createSupabaseServiceRoleClientIfConfigured();
       if (svc) {
-        const retry = await svc.from("shipments").insert(row);
-        if (!retry.error) error = null;
-        else error = retry.error;
+        const { error } = await svc.from("shipments").insert(row);
+        if (error) insertError = error;
+      } else {
+        const { error } = await authSupabase.from("shipments").insert(row);
+        if (error) insertError = error;
       }
+    } else {
+      const { error } = await createSupabaseAnonServerClient()
+        .from("shipments")
+        .insert(row);
+      if (error) insertError = error;
     }
-
-    if (error) insertError = error;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (
@@ -166,6 +187,9 @@ export async function submitShipment(formData: FormData) {
     }
     if (insertError.code === "23503") {
       return fail(locale, "profile_required");
+    }
+    if (authedUser && !getSupabaseServiceRoleKey()) {
+      return fail(locale, "missing_secret");
     }
     return fail(locale, "db");
   }
