@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { listShipments, type ShipmentRow } from "@/lib/shipments";
+import { getOfferCountsForShipments } from "@/lib/auth";
 
 type Props = {
   locale: string;
@@ -21,6 +22,7 @@ function formatDate(iso: string, locale: string) {
 export async function ShipmentsSection({ locale, searchQuery }: Props) {
   const t = await getTranslations("shipments");
   const shipments = await listShipments(searchQuery);
+  const offerCounts = await getOfferCountsForShipments(shipments.map((s) => s.id));
 
   return (
     <section
@@ -55,65 +57,75 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {shipments.map((s: ShipmentRow) => (
-            <li key={s.id}>
-              <article className="flex h-full flex-col rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                      {t("cardRoute")}
-                    </span>
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <span className="font-semibold text-[var(--text-primary)]">
-                        {s.origin}
+          {shipments.map((s: ShipmentRow) => {
+            const count = offerCounts[s.id] ?? 0;
+            return (
+              <li key={s.id}>
+                <article className="flex h-full flex-col rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                          {t("cardRoute")}
+                        </span>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className="font-semibold text-[var(--text-primary)]">
+                            {s.origin}
+                          </span>
+                          <span className="text-[var(--text-muted)]" aria-hidden>
+                            →
+                          </span>
+                          <span className="font-semibold text-[var(--text-primary)]">
+                            {s.destination}
+                          </span>
+                        </div>
+                      </div>
+                      {count > 0 && (
+                        <span className="flex h-6 min-w-[1.5rem] shrink-0 items-center justify-center rounded-full bg-[var(--brand)] px-2 text-xs font-bold text-white" title={t("offersCount", { count })}>
+                          {count}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-3 text-sm text-[var(--text-muted)]">
+                      <span>
+                        {t("weight")}:{" "}
+                        <span className="font-medium text-[var(--text-primary)]">
+                          {Number(s.weight_kg).toLocaleString(
+                            locale === "ar" ? "ar-MA" : "fr-FR",
+                          )}{" "}
+                          kg
+                        </span>
                       </span>
-                      <span className="text-[var(--text-muted)]" aria-hidden>
-                        →
-                      </span>
-                      <span className="font-semibold text-[var(--text-primary)]">
-                        {s.destination}
+                      <span>
+                        {t("price")}:{" "}
+                        <span className="font-medium text-[var(--text-primary)]">
+                          {Number(s.price).toLocaleString(
+                            locale === "ar" ? "ar-MA" : "fr-FR",
+                            {
+                              style: "currency",
+                              currency: "MAD",
+                              maximumFractionDigits: 0,
+                            },
+                          )}
+                        </span>
                       </span>
                     </div>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {formatDate(s.created_at, locale)}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-3 text-sm text-[var(--text-muted)]">
-                    <span>
-                      {t("weight")}:{" "}
-                      <span className="font-medium text-[var(--text-primary)]">
-                        {Number(s.weight_kg).toLocaleString(
-                          locale === "ar" ? "ar-MA" : "fr-FR",
-                        )}{" "}
-                        kg
-                      </span>
-                    </span>
-                    <span>
-                      {t("price")}:{" "}
-                      <span className="font-medium text-[var(--text-primary)]">
-                        {Number(s.price).toLocaleString(
-                          locale === "ar" ? "ar-MA" : "fr-FR",
-                          {
-                            style: "currency",
-                            currency: "MAD",
-                            maximumFractionDigits: 0,
-                          },
-                        )}
-                      </span>
-                    </span>
+                  <div className="mt-4 shrink-0 border-t border-[var(--border)] pt-4">
+                    <Link
+                      href={`/shipment/${s.id}`}
+                      className="flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                    >
+                      {t("viewDetails")}
+                    </Link>
                   </div>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {formatDate(s.created_at, locale)}
-                  </p>
-                </div>
-                <div className="mt-4 shrink-0 border-t border-[var(--border)] pt-4">
-                  <Link
-                    href={`/shipment/${s.id}`}
-                    className="flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-                  >
-                    {t("viewDetails")}
-                  </Link>
-                </div>
-              </article>
-            </li>
-          ))}
+                </article>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

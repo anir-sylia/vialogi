@@ -8,6 +8,8 @@ export type ShipmentRow = {
   weight_kg: number;
   price: number;
   user_id: string | null;
+  status: "open" | "assigned" | "completed";
+  assigned_transporteur_id: string | null;
 };
 
 /** Escape `%`, `_`, and `\` for PostgreSQL ILIKE patterns. */
@@ -103,6 +105,8 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
       weight_kg: data.weight_kg,
       price: data.price,
       user_id: data.user_id ?? null,
+      status: data.status ?? "open",
+      assigned_transporteur_id: data.assigned_transporteur_id ?? null,
     } as ShipmentRow;
   } catch {
     return null;

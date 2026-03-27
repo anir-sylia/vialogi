@@ -3,11 +3,17 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
 import { getShipmentById } from "@/lib/shipments";
-import { getProfile } from "@/lib/auth";
+import { getProfile, getOffersForShipment, getReviewsForShipment } from "@/lib/auth";
+import type { Profile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { OfferForm } from "@/components/shipment/OfferForm";
+import { OffersList } from "@/components/shipment/OffersList";
+import { ReviewForm } from "@/components/shipment/ReviewForm";
+import { ReviewsList } from "@/components/shipment/ReviewsList";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function formatDate(iso: string, locale: string) {
@@ -21,8 +27,9 @@ function formatDate(iso: string, locale: string) {
   }
 }
 
-export default async function ShipmentDetailPage({ params }: Props) {
+export default async function ShipmentDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
 
   const shipment = await getShipmentById(id);
@@ -47,8 +54,10 @@ export default async function ShipmentDetailPage({ params }: Props) {
   }
 
   const t = await getTranslations("shipmentDetail");
+  const to = await getTranslations("offers");
+  const tr = await getTranslations("reviews");
 
-  let ownerProfile: { first_name: string; last_name: string; phone: string } | null = null;
+  let ownerProfile: Profile | null = null;
   if (shipment.user_id) {
     ownerProfile = await getProfile(shipment.user_id);
   }
@@ -57,12 +66,51 @@ export default async function ShipmentDetailPage({ params }: Props) {
   const isTransporteur = profile.role === "transporteur";
   const canChat = isOwner || isTransporteur;
 
+  const offers = await getOffersForShipment(id);
+  const reviews = await getReviewsForShipment(id);
+
+  const profileIds = new Set<string>();
+  offers.forEach((o) => profileIds.add(o.transporteur_id));
+  reviews.forEach((r) => { profileIds.add(r.from_user_id); profileIds.add(r.to_user_id); });
+  if (shipment.user_id) profileIds.add(shipment.user_id);
+  if (shipment.assigned_transporteur_id) profileIds.add(shipment.assigned_transporteur_id);
+
+  const profileMap: Record<string, Profile> = {};
+  for (const pid of profileIds) {
+    const p = await getProfile(pid);
+    if (p) profileMap[pid] = p;
+  }
+
   const phone = ownerProfile?.phone;
   const whatsappUrl = phone
     ? `https://wa.me/${phone.replace(/[\s\-\(\)]/g, "")}?text=${encodeURIComponent(
         `${t("whatsappMessage")} : ${shipment.origin} → ${shipment.destination}`,
       )}`
     : null;
+
+  const hasReviewed = reviews.some((r) => r.from_user_id === user.id);
+  const isAssigned = shipment.status === "assigned" || shipment.status === "completed";
+
+  let reviewTarget: { id: string; name: string } | null = null;
+  if (isAssigned && !hasReviewed) {
+    if (isOwner && shipment.assigned_transporteur_id) {
+      const tp = profileMap[shipment.assigned_transporteur_id];
+      if (tp) reviewTarget = { id: tp.id, name: `${tp.first_name} ${tp.last_name}` };
+    } else if (isTransporteur && shipment.user_id) {
+      const cl = profileMap[shipment.user_id];
+      if (cl) reviewTarget = { id: cl.id, name: `${cl.first_name} ${cl.last_name}` };
+    }
+  }
+
+  const statusColor =
+    shipment.status === "assigned"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : shipment.status === "completed"
+        ? "bg-blue-50 text-blue-700 border-blue-200"
+        : "bg-amber-50 text-amber-700 border-amber-200";
+
+  const successMsg = typeof sp.success === "string" ? sp.success : null;
+  const errorMsg = typeof sp.error === "string" ? sp.error : null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
@@ -73,16 +121,32 @@ export default async function ShipmentDetailPage({ params }: Props) {
         {t("back")}
       </Link>
 
+      {successMsg && (
+        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          {to(`success_${successMsg}` as Parameters<typeof to>[0])}
+        </div>
+      )}
+      {errorMsg && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          {to(`error_${errorMsg}` as Parameters<typeof to>[0])}
+        </div>
+      )}
+
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
-        <div className="mb-6">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-            {t("route")}
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("route")}
+            </span>
+            <h1 className="mt-1 text-2xl font-bold text-[var(--text-primary)]">
+              {shipment.origin}
+              <span className="mx-2 text-[var(--text-muted)]">→</span>
+              {shipment.destination}
+            </h1>
+          </div>
+          <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusColor}`}>
+            {t(`status_${shipment.status}`)}
           </span>
-          <h1 className="mt-1 text-2xl font-bold text-[var(--text-primary)]">
-            {shipment.origin}
-            <span className="mx-2 text-[var(--text-muted)]">→</span>
-            {shipment.destination}
-          </h1>
         </div>
 
         <div className="grid gap-4 border-t border-[var(--border)] pt-6 sm:grid-cols-2">
@@ -122,7 +186,12 @@ export default async function ShipmentDetailPage({ params }: Props) {
                 {t("publishedBy")}
               </span>
               <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                {ownerProfile.first_name} {ownerProfile.last_name}
+                <Link
+                  href={`/profile/${ownerProfile.id}`}
+                  className="hover:text-[var(--brand)] hover:underline"
+                >
+                  {ownerProfile.first_name} {ownerProfile.last_name}
+                </Link>
               </p>
             </div>
           ) : null}
@@ -159,6 +228,52 @@ export default async function ShipmentDetailPage({ params }: Props) {
             </a>
           ) : null}
         </div>
+      </div>
+
+      {/* Offers Section */}
+      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
+        <h2 className="mb-4 text-lg font-bold text-[var(--text-primary)]">
+          {to("heading")}
+          {offers.length > 0 && (
+            <span className="ml-2 inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-[var(--brand)] px-2 text-xs font-bold text-white">
+              {offers.length}
+            </span>
+          )}
+        </h2>
+
+        {isTransporteur && shipment.status === "open" && (
+          <div className="mb-6 rounded-xl border border-dashed border-[var(--brand)]/30 bg-[var(--brand)]/5 p-4">
+            <OfferForm shipmentId={id} locale={locale} />
+          </div>
+        )}
+
+        <OffersList
+          offers={offers}
+          profileMap={profileMap}
+          shipmentId={id}
+          isOwner={isOwner}
+          locale={locale}
+        />
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
+        <h2 className="mb-4 text-lg font-bold text-[var(--text-primary)]">
+          {tr("heading")}
+        </h2>
+
+        {reviewTarget && (
+          <div className="mb-6 rounded-xl border border-dashed border-amber-300/50 bg-amber-50/50 p-4">
+            <ReviewForm
+              shipmentId={id}
+              toUserId={reviewTarget.id}
+              toUserName={reviewTarget.name}
+              locale={locale}
+            />
+          </div>
+        )}
+
+        <ReviewsList reviews={reviews} profileMap={profileMap} />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ type UserInfo = {
   id: string;
   firstName: string;
   role: "client" | "transporteur";
+  points: number;
 } | null;
 
 export function Navbar() {
@@ -33,7 +34,7 @@ export function Navbar() {
         }
         const { data: profile } = await supabase
           .from("profiles")
-          .select("first_name, role")
+          .select("first_name, role, points")
           .eq("id", authUser.id)
           .maybeSingle();
         if (profile) {
@@ -41,6 +42,7 @@ export function Navbar() {
             id: authUser.id,
             firstName: profile.first_name,
             role: profile.role,
+            points: profile.points ?? 0,
           });
         } else {
           setUser(null);
@@ -126,12 +128,20 @@ export function Navbar() {
 
           {!loading && user ? (
             <div className="hidden items-center gap-2 lg:flex">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]">
+              <Link
+                href={`/profile/${user.id}`}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)] transition-opacity hover:opacity-80"
+              >
                 {user.firstName.charAt(0).toUpperCase()}
-              </span>
+              </Link>
               <span className="max-w-[100px] truncate text-sm font-medium text-[var(--text-primary)]">
                 {user.firstName}
               </span>
+              {user.points > 0 && (
+                <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-400 px-1.5 text-[10px] font-bold text-white">
+                  {user.points}
+                </span>
+              )}
               <form action={signOut}>
                 <input type="hidden" name="locale" value={locale} />
                 <button
@@ -223,11 +233,20 @@ export function Navbar() {
 
           {!loading && user ? (
             <div className="mt-4 flex items-center gap-3 border-t border-[var(--border)] pt-4">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]">
+              <Link
+                href={`/profile/${user.id}`}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]"
+                onClick={() => setOpen(false)}
+              >
                 {user.firstName.charAt(0).toUpperCase()}
-              </span>
+              </Link>
               <span className="flex-1 truncate text-sm font-medium text-[var(--text-primary)]">
                 {user.firstName}
+                {user.points > 0 && (
+                  <span className="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-400 px-1.5 text-[10px] font-bold text-white">
+                    {user.points}
+                  </span>
+                )}
               </span>
               <form action={signOut}>
                 <input type="hidden" name="locale" value={locale} />
