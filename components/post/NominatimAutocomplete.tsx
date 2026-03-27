@@ -6,7 +6,10 @@ export type GeocodeResult = {
   place_id: number;
   lat: number;
   lon: number;
+  /** Full OSM string (long). */
   display_name: string;
+  /** Short city-focused label from API (preferred for UI). */
+  label?: string;
 };
 
 type Props = {
@@ -41,12 +44,14 @@ export function NominatimAutocomplete({
     async (q: string) => {
       if (q.length < 2) {
         setResults([]);
+        setLoading(false);
         return;
       }
       setLoading(true);
       try {
         const res = await fetch(
           `/api/nominatim/search?q=${encodeURIComponent(q)}&lang=${lang}`,
+          { signal: AbortSignal.timeout(12_000) },
         );
         const data = (await res.json()) as { results?: GeocodeResult[] };
         setResults(data.results ?? []);
@@ -110,20 +115,23 @@ export function NominatimAutocomplete({
           className="absolute z-40 mt-2 max-h-56 w-full overflow-auto rounded-xl border border-[var(--border)] bg-white py-1 shadow-lg"
           role="listbox"
         >
-          {results.map((r) => (
-            <li key={r.place_id} role="option">
-              <button
-                type="button"
-                className="flex w-full px-4 py-2.5 text-start text-sm text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
-                onClick={() => {
-                  onSelect(r);
-                  setOpen(false);
-                }}
-              >
-                {r.display_name}
-              </button>
-            </li>
-          ))}
+          {results.map((r) => {
+            const line = r.label ?? r.display_name;
+            return (
+              <li key={r.place_id} role="option" aria-selected={false}>
+                <button
+                  type="button"
+                  className="flex w-full px-4 py-2.5 text-start text-sm text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
+                  onClick={() => {
+                    onSelect(r);
+                    setOpen(false);
+                  }}
+                >
+                  {line}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </div>

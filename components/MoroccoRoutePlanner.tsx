@@ -140,8 +140,13 @@ export function MoroccoRoutePlanner() {
   const fetchMa = useCallback(
     async (q: string, which: "origin" | "dest") => {
       if (q.length < 2) {
-        if (which === "origin") setOriginPlaces([]);
-        else setDestPlaces([]);
+        if (which === "origin") {
+          setOriginPlaces([]);
+          setOriginLoading(false);
+        } else {
+          setDestPlaces([]);
+          setDestLoading(false);
+        }
         return;
       }
       const setLoading = which === "origin" ? setOriginLoading : setDestLoading;
@@ -150,6 +155,7 @@ export function MoroccoRoutePlanner() {
       try {
         const res = await fetch(
           `/api/places?q=${encodeURIComponent(q)}&lang=${locale}&country=ma`,
+          { signal: AbortSignal.timeout(12_000) },
         );
         const data = (await res.json()) as { places?: Place[] };
         const list = (data.places ?? []).filter(

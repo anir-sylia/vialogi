@@ -42,12 +42,12 @@ export function PostShipmentForm({ locale, serverError }: Props) {
   }, []);
 
   const onOriginSelect = (r: GeocodeResult) => {
-    setOriginLabel(r.display_name);
+    setOriginLabel(r.label ?? r.display_name);
     setOriginCoords([r.lat, r.lon]);
   };
 
   const onDestSelect = (r: GeocodeResult) => {
-    setDestLabel(r.display_name);
+    setDestLabel(r.label ?? r.display_name);
     setDestCoords([r.lat, r.lon]);
   };
 

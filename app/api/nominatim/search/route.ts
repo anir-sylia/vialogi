@@ -8,6 +8,35 @@ type NominatimItem = {
   address?: Record<string, string>;
 };
 
+/** Short label for UI: city/town + optional region — not the full OSM display_name. */
+function shortPlaceLabel(
+  address: Record<string, string> | undefined,
+  displayName: string,
+): string {
+  if (address) {
+    const main =
+      address.city ||
+      address.town ||
+      address.village ||
+      address.municipality ||
+      address.hamlet ||
+      address.county ||
+      address.state_district ||
+      "";
+    const region = address.state || address.region || "";
+    if (main && region && main.trim() !== region.trim()) {
+      return `${main.trim()}, ${region.trim()}`;
+    }
+    if (main) return main.trim();
+  }
+  const parts = displayName
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length <= 2) return displayName.trim();
+  return `${parts[0]}, ${parts[1]}`;
+}
+
 /**
  * Proxy Nominatim (usage policy: identify app via User-Agent).
  * https://operations.osmfoundation.org/policies/nominatim/
@@ -43,12 +72,16 @@ export async function GET(request: Request) {
   }
 
   const data = (await res.json()) as NominatimItem[];
-  const results = (Array.isArray(data) ? data : []).map((r) => ({
-    place_id: r.place_id,
-    lat: Number(r.lat),
-    lon: Number(r.lon),
-    display_name: r.display_name,
-  }));
+  const results = (Array.isArray(data) ? data : []).map((r) => {
+    const label = shortPlaceLabel(r.address, r.display_name);
+    return {
+      place_id: r.place_id,
+      lat: Number(r.lat),
+      lon: Number(r.lon),
+      display_name: r.display_name,
+      label,
+    };
+  });
 
   return NextResponse.json({ results });
 }

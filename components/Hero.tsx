@@ -35,12 +35,14 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
     async (q: string) => {
       if (q.length < 2) {
         setPlaces([]);
+        setLoading(false);
         return;
       }
       setLoading(true);
       try {
         const res = await fetch(
           `/api/places?q=${encodeURIComponent(q)}&lang=${locale}&country=ma`,
+          { signal: AbortSignal.timeout(12_000) },
         );
         const data = (await res.json()) as { places?: Place[] };
         setPlaces(data.places ?? []);
