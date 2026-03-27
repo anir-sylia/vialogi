@@ -30,8 +30,16 @@ export function SignupForm({ locale, action }: Props) {
   const t = useTranslations("auth");
   const [role, setRole] = useState<"client" | "transporteur">("client");
 
+  function handleSubmit(formData: FormData) {
+    const local = String(formData.get("phone_local") ?? "").replace(/\s/g, "");
+    const full = "+212" + (local.startsWith("0") ? local.slice(1) : local);
+    formData.set("phone", full);
+    formData.delete("phone_local");
+    action(formData);
+  }
+
   return (
-    <form action={action} className="mt-8 space-y-5">
+    <form action={handleSubmit} className="mt-8 space-y-5">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="role" value={role} />
 
@@ -84,7 +92,22 @@ export function SignupForm({ locale, action }: Props) {
         <label htmlFor="phone" className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
           {t("phone")}
         </label>
-        <input id="phone" name="phone" type="tel" required placeholder="+212 6XX XXX XXX" className={inputCls} />
+        <div className="flex">
+          <span className="inline-flex items-center rounded-l-xl border border-r-0 border-[var(--border)] bg-[var(--surface-muted)] px-3.5 text-sm font-semibold text-[var(--text-muted)] select-none">
+            +212
+          </span>
+          <input
+            id="phone"
+            name="phone_local"
+            type="tel"
+            required
+            inputMode="numeric"
+            pattern="[0-9]{9,10}"
+            maxLength={10}
+            placeholder="6XX XXX XXX"
+            className={inputCls + " rounded-l-none"}
+          />
+        </div>
       </div>
 
       {role === "transporteur" ? (
