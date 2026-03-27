@@ -1,13 +1,64 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { signOut } from "@/lib/actions/auth";
+
+type UserInfo = {
+  id: string;
+  firstName: string;
+  role: "client" | "transporteur";
+} | null;
 
 export function Navbar() {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<UserInfo>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+
+    async function loadUser() {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("first_name, role")
+          .eq("id", authUser.id)
+          .maybeSingle();
+        if (profile) {
+          setUser({
+            id: authUser.id,
+            firstName: profile.first_name,
+            role: profile.role,
+          });
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+      setLoading(false);
+    }
+
+    void loadUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      void loadUser();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const links = (
     <>
@@ -51,35 +102,86 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav
-          className="hidden items-center gap-8 md:flex"
-          aria-label="Main"
-        >
+        <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
           {links}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/#login"
-            className="hidden text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] lg:inline"
-          >
-            {t("signIn")}
-          </Link>
+          {!loading && !user ? (
+            <>
+              <Link
+                href="/login"
+                className="hidden text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] lg:inline"
+              >
+                {t("signIn")}
+              </Link>
+              <Link
+                href="/signup"
+                className="hidden text-sm font-medium text-[var(--brand)] hover:underline lg:inline"
+              >
+                {t("signUp")}
+              </Link>
+            </>
+          ) : null}
+
+          {!loading && user ? (
+            <div className="hidden items-center gap-2 lg:flex">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]">
+                {user.firstName.charAt(0).toUpperCase()}
+              </span>
+              <span className="max-w-[100px] truncate text-sm font-medium text-[var(--text-primary)]">
+                {user.firstName}
+              </span>
+              <form action={signOut}>
+                <input type="hidden" name="locale" value={locale} />
+                <button
+                  type="submit"
+                  className="text-xs font-medium text-[var(--text-muted)] hover:text-red-600"
+                >
+                  {t("logout")}
+                </button>
+              </form>
+            </div>
+          ) : null}
+
           <LanguageSwitcher />
-          <Link
-            href={{ pathname: "/post" }}
-            prefetch={true}
-            className="hidden rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
-          >
-            {t("postAnnouncement")}
-          </Link>
-          <Link
-            href={{ pathname: "/post" }}
-            prefetch={true}
-            className="inline-flex rounded-lg bg-[var(--brand)] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:hidden"
-          >
-            +
-          </Link>
+
+          {user?.role === "client" ? (
+            <>
+              <Link
+                href={{ pathname: "/post" }}
+                prefetch={true}
+                className="hidden rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
+              >
+                {t("postAnnouncement")}
+              </Link>
+              <Link
+                href={{ pathname: "/post" }}
+                prefetch={true}
+                className="inline-flex rounded-lg bg-[var(--brand)] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:hidden"
+              >
+                +
+              </Link>
+            </>
+          ) : !user ? (
+            <>
+              <Link
+                href={{ pathname: "/post" }}
+                prefetch={true}
+                className="hidden rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
+              >
+                {t("postAnnouncement")}
+              </Link>
+              <Link
+                href={{ pathname: "/post" }}
+                prefetch={true}
+                className="inline-flex rounded-lg bg-[var(--brand)] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:hidden"
+              >
+                +
+              </Link>
+            </>
+          ) : null}
+
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-white text-[var(--text-primary)] md:hidden"
@@ -118,14 +220,54 @@ export function Navbar() {
       {open ? (
         <div className="border-t border-[var(--border)] bg-[var(--header-bg)] px-4 py-4 md:hidden">
           <div className="flex flex-col gap-4">{links}</div>
-          <Link
-            href={{ pathname: "/post" }}
-            prefetch={true}
-            className="mt-4 flex w-full items-center justify-center rounded-lg bg-[var(--brand)] py-3 text-sm font-semibold text-white"
-            onClick={() => setOpen(false)}
-          >
-            {t("postAnnouncement")}
-          </Link>
+
+          {!loading && user ? (
+            <div className="mt-4 flex items-center gap-3 border-t border-[var(--border)] pt-4">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]">
+                {user.firstName.charAt(0).toUpperCase()}
+              </span>
+              <span className="flex-1 truncate text-sm font-medium text-[var(--text-primary)]">
+                {user.firstName}
+              </span>
+              <form action={signOut}>
+                <input type="hidden" name="locale" value={locale} />
+                <button
+                  type="submit"
+                  className="text-xs font-medium text-red-600 hover:underline"
+                >
+                  {t("logout")}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="mt-4 flex gap-3 border-t border-[var(--border)] pt-4">
+              <Link
+                href="/login"
+                className="flex-1 rounded-xl border border-[var(--border)] py-2.5 text-center text-sm font-semibold text-[var(--text-primary)]"
+                onClick={() => setOpen(false)}
+              >
+                {t("signIn")}
+              </Link>
+              <Link
+                href="/signup"
+                className="flex-1 rounded-xl bg-[var(--brand)] py-2.5 text-center text-sm font-semibold text-white"
+                onClick={() => setOpen(false)}
+              >
+                {t("signUp")}
+              </Link>
+            </div>
+          )}
+
+          {user?.role === "client" || !user ? (
+            <Link
+              href={{ pathname: "/post" }}
+              prefetch={true}
+              className="mt-3 flex w-full items-center justify-center rounded-lg bg-[var(--brand)] py-3 text-sm font-semibold text-white"
+              onClick={() => setOpen(false)}
+            >
+              {t("postAnnouncement")}
+            </Link>
+          ) : null}
         </div>
       ) : null}
     </header>

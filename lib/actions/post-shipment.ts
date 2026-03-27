@@ -3,7 +3,10 @@
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
+import {
+  createSupabaseAnonServerClient,
+  createSupabaseServerClient,
+} from "@/utils/supabase/server";
 import { isSupabasePublicEnvConfigured } from "@/utils/supabase/env";
 
 function fail(
@@ -61,12 +64,16 @@ export async function submitShipment(formData: FormData) {
     hint?: string;
   } | null = null;
   try {
-    const supabase = createSupabaseAnonServerClient();
+    const authSupabase = await createSupabaseServerClient();
+    const { data: { user } } = await authSupabase.auth.getUser();
+
+    const supabase = user ? authSupabase : createSupabaseAnonServerClient();
     const { error } = await supabase.from("shipments").insert({
       origin,
       destination,
       weight_kg: weight,
       price,
+      ...(user ? { user_id: user.id } : {}),
     });
     if (error) insertError = error;
   } catch (e) {

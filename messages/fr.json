@@ -8,6 +8,8 @@
     "network": "Réseau",
     "pricing": "Tarifs",
     "signIn": "Connexion",
+    "signUp": "Inscription",
+    "logout": "Déconnexion",
     "postAnnouncement": "Publier une annonce"
   },
   "hero": {
@@ -33,23 +35,64 @@
     "originPlaceholder": "Ex. Rabat",
     "destinationPlaceholder": "Ex. Marrakech",
     "pickTwo": "Sélectionnez une ville dans chaque liste pour afficher la carte.",
-    "calculating": "Calcul de l’itinéraire…",
+    "calculating": "Calcul de l'itinéraire…",
     "distance": "Distance : {km} km",
     "duration": "Durée estimée (routage) : ~{min} min",
     "modeRoad": "Tracé : route (OpenStreetMap / OSRM)",
-    "modeStraight": "Tracé : ligne directe (distance à vol d’oiseau)",
-    "mapEmpty": "La carte s’affichera ici après le choix des deux villes.",
-    "mapAria": "Carte de l’itinéraire"
+    "modeStraight": "Tracé : ligne directe (distance à vol d'oiseau)",
+    "mapEmpty": "La carte s'affichera ici après le choix des deux villes.",
+    "mapAria": "Carte de l'itinéraire"
   },
   "language": {
     "label": "Langue",
     "fr": "Français",
     "ar": "العربية"
   },
+  "auth": {
+    "backHome": "Retour à l'accueil",
+    "signupTitle": "Créer un compte",
+    "signupSubtitle": "Inscrivez-vous pour publier des annonces ou proposer vos services de transport.",
+    "signupSubmit": "Créer mon compte",
+    "signupSubmitting": "Création…",
+    "loginTitle": "Connexion",
+    "loginSubtitle": "Accédez à votre espace Vialogi.",
+    "loginSubmit": "Se connecter",
+    "loginSubmitting": "Connexion…",
+    "roleLabel": "Vous êtes",
+    "roleClient": "Client (expéditeur)",
+    "roleTransporteur": "Transporteur",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phone": "Téléphone",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "passwordHint": "6 caractères minimum",
+    "transportType": "Type de transport",
+    "transportTypePlaceholder": "Sélectionnez…",
+    "transportCamion": "Camion",
+    "transportCamionnette": "Camionnette",
+    "transportRemorque": "Remorque",
+    "transportFrigorifique": "Frigorifique",
+    "transportAutre": "Autre",
+    "haveAccount": "Déjà inscrit ?",
+    "loginLink": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "signupLink": "S'inscrire",
+    "errors": {
+      "required_fields": "Veuillez remplir tous les champs obligatoires.",
+      "invalid_role": "Rôle invalide.",
+      "weak_password": "Le mot de passe doit faire au moins 6 caractères.",
+      "email_taken": "Cet e-mail est déjà utilisé.",
+      "auth_error": "Erreur lors de l'inscription. Réessayez.",
+      "profile_error": "Le compte est créé mais le profil n'a pas pu être enregistré.",
+      "invalid_credentials": "E-mail ou mot de passe incorrect.",
+      "env": "Configuration Supabase manquante."
+    }
+  },
   "postPage": {
     "title": "Publier une annonce de fret",
-    "subtitle": "Indiquez l’origine, la destination, le poids et le prix. Les envois apparaissent sur l’accueil ; le chat permettra d’échanger avec les transporteurs.",
-    "back": "Retour à l’accueil"
+    "subtitle": "Indiquez l'origine, la destination, le poids et le prix. Les envois apparaissent sur l'accueil ; le chat permettra d'échanger avec les transporteurs.",
+    "back": "Retour à l'accueil"
   },
   "postForm": {
     "origin": "Origine",
@@ -60,24 +103,24 @@
     "weightPlaceholder": "Ex. 1250",
     "price": "Prix proposé (MAD)",
     "pricePlaceholder": "Ex. 4500",
-    "submit": "Publier l’envoi",
+    "submit": "Publier l'envoi",
     "submitting": "Publication…",
     "mapSectionLabel": "Itinéraire",
-    "mapPlaceholder": "Saisissez l’origine et la destination puis choisissez une suggestion dans chaque liste — le tracé routier s’affichera ici.",
+    "mapPlaceholder": "Saisissez l'origine et la destination puis choisissez une suggestion dans chaque liste — le tracé routier s'affichera ici.",
     "routeCalculating": "Calcul du tracé routier…",
     "routeDistanceKm": "Distance estimée (route) : {km} km",
     "errors": {
-      "required_fields": "L’origine et la destination sont obligatoires.",
+      "required_fields": "L'origine et la destination sont obligatoires.",
       "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
       "invalid_price": "Indiquez un prix valide (nombre positif ou zéro).",
       "unknown_error": "Une erreur est survenue. Réessayez.",
-      "db": "Impossible d’enregistrer dans la base. Vérifiez Supabase et les droits RLS.",
+      "db": "Impossible d'enregistrer dans la base. Vérifiez Supabase et les droits RLS.",
       "env": "Variables Supabase absentes : définissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY dans Vercel (Settings → Environment Variables) ou dans .env.local, puis redéployez."
     }
   },
   "shipments": {
     "heading": "Envois disponibles",
-    "subheading": "Données en direct depuis Supabase. Sans recherche : les 6 derniers envois. Avec une ville : jusqu’à 50 annonces dont l’origine ou la destination correspond.",
+    "subheading": "Données en direct depuis Supabase. Sans recherche : les 6 derniers envois. Avec une ville : jusqu'à 50 annonces dont l'origine ou la destination correspond.",
     "cardRoute": "Trajet",
     "filteredBy": "Filtre : « {q} »",
     "empty": "Aucun envoi pour le moment.",
@@ -85,10 +128,22 @@
     "emptyHint": "Affinez la recherche ou publiez une nouvelle annonce.",
     "weight": "Poids",
     "price": "Prix",
+    "viewDetails": "Voir le détail",
     "openChat": "Chat",
     "publishedToast": "Votre annonce a bien été publiée.",
     "dismissToast": "Fermer",
     "matchCount": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+  },
+  "shipmentDetail": {
+    "back": "Retour à l'accueil",
+    "route": "Trajet",
+    "weight": "Poids",
+    "price": "Prix",
+    "publishedAt": "Date de publication",
+    "publishedBy": "Publié par",
+    "openChat": "Discuter",
+    "chatOnlyTransporteur": "Seuls les transporteurs inscrits peuvent discuter avec l'expéditeur.",
+    "whatsappMessage": "Bonjour, je suis intéressé par votre envoi sur Vialogi"
   },
   "chat": {
     "back": "Retour",
@@ -100,14 +155,15 @@
     "statusOnline": "En ligne",
     "messagesLabel": "Messages",
     "demoNotice": "Démo — branchez Supabase Realtime ici",
+    "noMessages": "Aucun message pour le moment. Envoyez le premier !",
     "inputPlaceholder": "Écrire un message…",
     "send": "Envoyer",
     "mock": {
       "driverName": "Transporteur",
       "eta": "~45 min",
-      "driver1": "Bonjour, je peux prendre la charge demain matin. Confirmez l’accès quai ?",
+      "driver1": "Bonjour, je peux prendre la charge demain matin. Confirmez l'accès quai ?",
       "user1": "Oui, quai B2 de 8h à 12h.",
-      "driver2": "Parfait, j’envoie la confirmation sur la plateforme."
+      "driver2": "Parfait, j'envoie la confirmation sur la plateforme."
     }
   }
 }

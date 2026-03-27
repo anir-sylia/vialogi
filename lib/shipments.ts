@@ -7,6 +7,7 @@ export type ShipmentRow = {
   destination: string;
   weight_kg: number;
   price: number;
+  user_id: string | null;
 };
 
 /** Escape `%`, `_`, and `\` for PostgreSQL ILIKE patterns. */
@@ -85,16 +86,24 @@ export async function countShipments(): Promise<number> {
 export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
   try {
     const supabase = createSupabaseAnonServerClient();
+
     const { data, error } = await supabase
       .from("shipments")
-      .select("id, created_at, origin, destination, weight_kg, price")
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error || !data) {
-      return null;
-    }
-    return data as ShipmentRow;
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      created_at: data.created_at,
+      origin: data.origin,
+      destination: data.destination,
+      weight_kg: data.weight_kg,
+      price: data.price,
+      user_id: data.user_id ?? null,
+    } as ShipmentRow;
   } catch {
     return null;
   }

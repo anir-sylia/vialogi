@@ -1,7 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { PostShipmentForm } from "@/components/post/PostShipmentForm";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { getProfile } from "@/lib/auth";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -28,6 +30,19 @@ function parseError(raw: string | string[] | undefined): ErrorCode | null {
 export default async function PostPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirect({ href: { pathname: "/signup", query: { next: "/post" } }, locale });
+  }
+
+  const profile = await getProfile(user.id);
+  if (!profile || profile.role !== "client") {
+    return redirect({ href: { pathname: "/signup", query: { next: "/post" } }, locale });
+  }
+
   const sp = await searchParams;
   const errCode = parseError(sp?.e);
 

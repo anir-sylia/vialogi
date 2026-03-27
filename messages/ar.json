@@ -8,6 +8,8 @@
     "network": "الشبكة",
     "pricing": "الأسعار",
     "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
     "postAnnouncement": "نشر إعلان"
   },
   "hero": {
@@ -45,6 +47,47 @@
     "label": "اللغة",
     "fr": "Français",
     "ar": "العربية"
+  },
+  "auth": {
+    "backHome": "العودة إلى الرئيسية",
+    "signupTitle": "إنشاء حساب",
+    "signupSubtitle": "سجّل لنشر الإعلانات أو تقديم خدمات النقل.",
+    "signupSubmit": "إنشاء حسابي",
+    "signupSubmitting": "جاري الإنشاء…",
+    "loginTitle": "تسجيل الدخول",
+    "loginSubtitle": "ادخل إلى حسابك على فيالوجي.",
+    "loginSubmit": "تسجيل الدخول",
+    "loginSubmitting": "جاري الدخول…",
+    "roleLabel": "أنت",
+    "roleClient": "عميل (مُرسِل)",
+    "roleTransporteur": "ناقل",
+    "firstName": "الاسم الأول",
+    "lastName": "اللقب",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "passwordHint": "6 أحرف على الأقل",
+    "transportType": "نوع النقل",
+    "transportTypePlaceholder": "اختر…",
+    "transportCamion": "شاحنة",
+    "transportCamionnette": "شاحنة صغيرة",
+    "transportRemorque": "مقطورة",
+    "transportFrigorifique": "مبرّد",
+    "transportAutre": "أخرى",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginLink": "تسجيل الدخول",
+    "noAccount": "ليس لديك حساب؟",
+    "signupLink": "إنشاء حساب",
+    "errors": {
+      "required_fields": "يرجى ملء جميع الحقول المطلوبة.",
+      "invalid_role": "دور غير صالح.",
+      "weak_password": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+      "email_taken": "هذا البريد الإلكتروني مستخدم بالفعل.",
+      "auth_error": "حدث خطأ أثناء التسجيل. حاول مرة أخرى.",
+      "profile_error": "تم إنشاء الحساب لكن تعذر حفظ الملف الشخصي.",
+      "invalid_credentials": "بريد إلكتروني أو كلمة مرور غير صحيحة.",
+      "env": "إعدادات Supabase ناقصة."
+    }
   },
   "postPage": {
     "title": "نشر إعلان شحن",
@@ -85,10 +128,22 @@
     "emptyHint": "حسّن البحث أو انشر إعلانًا جديدًا.",
     "weight": "الوزن",
     "price": "السعر",
+    "viewDetails": "عرض التفاصيل",
     "openChat": "محادثة",
     "publishedToast": "تم نشر إعلانك بنجاح.",
     "dismissToast": "إغلاق",
     "matchCount": "{count, plural, =0 {لا نتائج} one {# نتيجة} other {# نتائج}}"
+  },
+  "shipmentDetail": {
+    "back": "العودة إلى الرئيسية",
+    "route": "المسار",
+    "weight": "الوزن",
+    "price": "السعر",
+    "publishedAt": "تاريخ النشر",
+    "publishedBy": "نُشر بواسطة",
+    "openChat": "بدء المحادثة",
+    "chatOnlyTransporteur": "يمكن للناقلين المسجلين فقط التواصل مع المُرسِل.",
+    "whatsappMessage": "مرحبًا، أنا مهتم بشحنتك على فيالوجي"
   },
   "chat": {
     "back": "رجوع",
@@ -100,6 +155,7 @@
     "statusOnline": "متصل",
     "messagesLabel": "الرسائل",
     "demoNotice": "تجريبي — اربط Supabase Realtime هنا",
+    "noMessages": "لا توجد رسائل بعد. أرسل الرسالة الأولى!",
     "inputPlaceholder": "اكتب رسالة…",
     "send": "إرسال",
     "mock": {

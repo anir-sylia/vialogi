@@ -105,10 +105,10 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
                 </div>
                 <div className="mt-4 shrink-0 border-t border-[var(--border)] pt-4">
                   <Link
-                    href={`/chat/${s.id}`}
+                    href={`/shipment/${s.id}`}
                     className="flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
                   >
-                    {t("openChat")}
+                    {t("viewDetails")}
                   </Link>
                 </div>
               </article>
