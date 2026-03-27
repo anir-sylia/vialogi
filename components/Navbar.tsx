@@ -23,14 +23,26 @@ export function Navbar() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function loadUser() {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (!authUser) {
+          // Session restoration can be slightly delayed right after redirects.
+          if (!retryTimer) {
+            retryTimer = setTimeout(() => {
+              retryTimer = null;
+              void loadUser();
+            }, 600);
+          }
           setUser(null);
           setLoading(false);
           return;
+        }
+        if (retryTimer) {
+          clearTimeout(retryTimer);
+          retryTimer = null;
         }
         const { data: profile } = await supabase
           .from("profiles")
@@ -53,13 +65,15 @@ export function Navbar() {
       setLoading(false);
     }
 
-    void loadUser();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       void loadUser();
     });
+    void loadUser();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (retryTimer) clearTimeout(retryTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const links = (
