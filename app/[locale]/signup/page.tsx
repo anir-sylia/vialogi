@@ -18,7 +18,7 @@ export default async function SignupPage({ params, searchParams }: Props) {
   const t = await getTranslations("auth");
   const te = await getTranslations("auth.errors");
 
-  const validErrors = ["required_fields", "invalid_role", "weak_password", "email_taken", "auth_error", "profile_error", "env"] as const;
+  const validErrors = ["required_fields", "invalid_role", "weak_password", "email_taken", "rate_limit", "auth_error", "profile_error", "env"] as const;
   type SignupError = (typeof validErrors)[number];
   const errorMessage =
     errorCode && validErrors.includes(errorCode as SignupError)

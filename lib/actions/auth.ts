@@ -59,9 +59,44 @@ export async function signUp(formData: FormData) {
 
   if (authError || !authData.user) {
     console.error("signUp auth error:", authError?.message);
-    const code = authError?.message?.includes("already registered")
-      ? "email_taken"
-      : "auth_error";
+    const msg = authError?.message?.toLowerCase() ?? "";
+    let code = "auth_error";
+    if (msg.includes("already registered")) code = "email_taken";
+    else if (msg.includes("rate limit")) code = "rate_limit";
+
+    if (code === "email_taken") {
+      const { error: loginErr } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (loginErr) {
+        return redirect({
+          href: { pathname: "/signup", query: { error: "email_taken" } },
+          locale,
+        });
+      }
+      const { data: { user: existingUser } } = await supabase.auth.getUser();
+      if (existingUser) {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", existingUser.id)
+          .maybeSingle();
+        if (!existingProfile) {
+          await supabase.from("profiles").insert({
+            id: existingUser.id,
+            role,
+            first_name: firstName,
+            last_name: lastName,
+            phone,
+            transport_type:
+              role === "transporteur" ? transportType || null : null,
+          });
+        }
+      }
+      return redirect({ href: "/", locale });
+    }
+
     return redirect({
       href: { pathname: "/signup", query: { error: code } },
       locale,

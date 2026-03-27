@@ -83,6 +83,7 @@
       "invalid_role": "Rôle invalide.",
       "weak_password": "Le mot de passe doit faire au moins 6 caractères.",
       "email_taken": "Cet e-mail est déjà utilisé.",
+      "rate_limit": "Trop de tentatives. Attendez quelques minutes, puis réessayez.",
       "auth_error": "Erreur lors de l'inscription. Réessayez.",
       "profile_error": "Le compte est créé mais le profil n'a pas pu être enregistré.",
       "invalid_credentials": "E-mail ou mot de passe incorrect.",
