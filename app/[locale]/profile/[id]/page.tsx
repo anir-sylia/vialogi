@@ -51,7 +51,9 @@ export default async function ProfilePage({ params }: Props) {
   const roleBadge =
     targetProfile.role === "client"
       ? "bg-blue-50 text-blue-700 border-blue-200"
-      : "bg-emerald-50 text-emerald-700 border-emerald-200";
+      : targetProfile.role === "admin"
+        ? "bg-rose-50 text-rose-700 border-rose-200"
+        : "bg-emerald-50 text-emerald-700 border-emerald-200";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">

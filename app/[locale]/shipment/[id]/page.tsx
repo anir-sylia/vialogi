@@ -10,6 +10,7 @@ import { OfferForm } from "@/components/shipment/OfferForm";
 import { OffersList } from "@/components/shipment/OffersList";
 import { ReviewForm } from "@/components/shipment/ReviewForm";
 import { ReviewsList } from "@/components/shipment/ReviewsList";
+import { ShipmentModerationActions } from "@/components/shipment/ShipmentModerationActions";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -64,6 +65,8 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
 
   const isOwner = profile.id === shipment.user_id;
   const isTransporteur = profile.role === "transporteur";
+  const isAdmin = profile.role === "admin";
+  const canRemoveShipment = isOwner || isAdmin;
   const canChat = isOwner || isTransporteur;
 
   const offers = await getOffersForShipment(id);
@@ -228,6 +231,12 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
             </a>
           ) : null}
         </div>
+
+        <ShipmentModerationActions
+          shipmentId={id}
+          canRemove={canRemoveShipment}
+          isAdmin={isAdmin}
+        />
       </div>
 
       {/* Offers Section */}

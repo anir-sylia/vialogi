@@ -148,7 +148,19 @@
     "whatsappMessage": "Bonjour, je suis intéressé par votre envoi sur Vialogi",
     "status_open": "Ouvert",
     "status_assigned": "Attribué",
-    "status_completed": "Terminé"
+    "status_completed": "Terminé",
+    "remove": "Supprimer l'annonce",
+    "removing": "Suppression…",
+    "confirmRemove": "Voulez-vous vraiment supprimer cette annonce ?",
+    "removeReasonPrompt": "Raison de suppression (optionnel)",
+    "adminModerationHint": "Action admin: cette annonce sera retirée de la liste publique.",
+    "ownerRemoveHint": "Vous pouvez retirer votre annonce de la liste publique.",
+    "error_unauthorized": "Vous devez être connecté.",
+    "error_forbidden": "Vous n'êtes pas autorisé à supprimer cette annonce.",
+    "error_not_found": "Annonce introuvable.",
+    "error_rate_limited": "Trop de suppressions en peu de temps. Réessayez plus tard.",
+    "error_update_failed": "Impossible de supprimer l'annonce pour le moment.",
+    "error_remove_failed": "Échec de suppression. Réessayez."
   },
   "offers": {
     "heading": "Offres de transport",
@@ -190,6 +202,7 @@
     "backHome": "Retour à l'accueil",
     "role_client": "Client",
     "role_transporteur": "Transporteur",
+    "role_admin": "Admin",
     "points": "Points",
     "transactions": "Transactions",
     "avgRating": "Note moyenne",

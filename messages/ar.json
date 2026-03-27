@@ -148,7 +148,19 @@
     "whatsappMessage": "مرحبًا، أنا مهتم بشحنتك على فيالوجي",
     "status_open": "مفتوح",
     "status_assigned": "مُسند",
-    "status_completed": "مكتمل"
+    "status_completed": "مكتمل",
+    "remove": "حذف الإعلان",
+    "removing": "جارٍ الحذف…",
+    "confirmRemove": "هل تريد حذف هذا الإعلان فعلاً؟",
+    "removeReasonPrompt": "سبب الحذف (اختياري)",
+    "adminModerationHint": "إجراء مشرف: سيتم إخفاء هذا الإعلان من القائمة العامة.",
+    "ownerRemoveHint": "يمكنك إزالة إعلانك من القائمة العامة.",
+    "error_unauthorized": "يجب تسجيل الدخول أولاً.",
+    "error_forbidden": "غير مسموح لك بحذف هذا الإعلان.",
+    "error_not_found": "الإعلان غير موجود.",
+    "error_rate_limited": "عمليات حذف كثيرة خلال وقت قصير. حاول لاحقًا.",
+    "error_update_failed": "تعذر حذف الإعلان الآن.",
+    "error_remove_failed": "فشلت عملية الحذف. حاول مرة أخرى."
   },
   "offers": {
     "heading": "عروض النقل",
@@ -190,6 +202,7 @@
     "backHome": "العودة إلى الرئيسية",
     "role_client": "عميل",
     "role_transporteur": "ناقل",
+    "role_admin": "مشرف",
     "points": "النقاط",
     "transactions": "المعاملات",
     "avgRating": "متوسط التقييم",

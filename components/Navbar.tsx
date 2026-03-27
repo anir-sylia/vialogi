@@ -10,7 +10,7 @@ import { signOut } from "@/lib/actions/auth";
 type UserInfo = {
   id: string;
   firstName: string;
-  role: "client" | "transporteur";
+  role: "client" | "transporteur" | "admin";
   points: number;
 } | null;
 

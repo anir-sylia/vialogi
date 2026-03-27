@@ -8,9 +8,22 @@ export type ShipmentRow = {
   weight_kg: number;
   price: number;
   user_id: string | null;
-  status: "open" | "assigned" | "completed";
+  status: "open" | "assigned" | "completed" | "removed";
   assigned_transporteur_id: string | null;
+  removed_by: string | null;
+  removed_at: string | null;
+  removal_reason: string | null;
 };
+
+export const PUBLIC_SHIPMENT_STATUSES = ["open", "assigned", "completed"] as const;
+
+export function isPublicShipmentStatus(
+  status: ShipmentRow["status"],
+): status is (typeof PUBLIC_SHIPMENT_STATUSES)[number] {
+  return PUBLIC_SHIPMENT_STATUSES.includes(
+    status as (typeof PUBLIC_SHIPMENT_STATUSES)[number],
+  );
+}
 
 /** Escape `%`, `_`, and `\` for PostgreSQL ILIKE patterns. */
 export function escapeIlikePattern(value: string): string {
@@ -42,6 +55,7 @@ export async function listShipments(
     let query = supabase
       .from("shipments")
       .select("id, created_at, origin, destination, weight_kg, price")
+      .in("status", [...PUBLIC_SHIPMENT_STATUSES])
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -72,7 +86,8 @@ export async function countShipments(): Promise<number> {
     const supabase = createSupabaseAnonServerClient();
     const { count, error } = await supabase
       .from("shipments")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .in("status", [...PUBLIC_SHIPMENT_STATUSES]);
 
     if (error) {
       console.error("countShipments:", error.message);
@@ -93,6 +108,7 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
       .from("shipments")
       .select("*")
       .eq("id", id)
+      .in("status", [...PUBLIC_SHIPMENT_STATUSES])
       .maybeSingle();
 
     if (error || !data) return null;
@@ -107,6 +123,9 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
       user_id: data.user_id ?? null,
       status: data.status ?? "open",
       assigned_transporteur_id: data.assigned_transporteur_id ?? null,
+      removed_by: data.removed_by ?? null,
+      removed_at: data.removed_at ?? null,
+      removal_reason: data.removal_reason ?? null,
     } as ShipmentRow;
   } catch {
     return null;

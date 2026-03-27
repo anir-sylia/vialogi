@@ -2,7 +2,7 @@ import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
 
 export type Profile = {
   id: string;
-  role: "client" | "transporteur";
+  role: "client" | "transporteur" | "admin";
   first_name: string;
   last_name: string;
   phone: string;
