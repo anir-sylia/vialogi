@@ -10,7 +10,25 @@
     "signIn": "تسجيل الدخول",
     "signUp": "إنشاء حساب",
     "logout": "تسجيل الخروج",
-    "postAnnouncement": "نشر إعلان"
+    "postAnnouncement": "نشر إعلان",
+    "adminUsers": "المستخدمون"
+  },
+  "adminUsers": {
+    "title": "العملاء والناقلون",
+    "subtitle": "الملفات المسجلة في Supabase (عميل أو ناقل).",
+    "backHome": "الرئيسية",
+    "clients": "العملاء",
+    "transporteurs": "الناقلون",
+    "empty": "لا يوجد ملف.",
+    "name": "الاسم",
+    "role": "الدور",
+    "phone": "الهاتف",
+    "transportType": "نوع النقل",
+    "points": "النقاط",
+    "rating": "التقييم",
+    "joined": "تاريخ التسجيل",
+    "profile": "الملف",
+    "open": "عرض"
   },
   "hero": {
     "badge": "منصة لوجستيات للأعمال",

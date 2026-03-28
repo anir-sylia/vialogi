@@ -10,7 +10,25 @@
     "signIn": "Connexion",
     "signUp": "Inscription",
     "logout": "Déconnexion",
-    "postAnnouncement": "Publier une annonce"
+    "postAnnouncement": "Publier une annonce",
+    "adminUsers": "Utilisateurs"
+  },
+  "adminUsers": {
+    "title": "Clients et transporteurs",
+    "subtitle": "Profils enregistrés dans Supabase (rôles client et transporteur).",
+    "backHome": "Accueil",
+    "clients": "Clients",
+    "transporteurs": "Transporteurs",
+    "empty": "Aucun profil.",
+    "name": "Nom",
+    "role": "Rôle",
+    "phone": "Téléphone",
+    "transportType": "Type de transport",
+    "points": "Points",
+    "rating": "Note",
+    "joined": "Inscription",
+    "profile": "Fiche",
+    "open": "Voir"
   },
   "hero": {
     "badge": "Plateforme logistique B2B",

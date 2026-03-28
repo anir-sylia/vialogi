@@ -142,6 +142,14 @@ export function Navbar() {
 
           {!loading && user ? (
             <div className="hidden items-center gap-2 lg:flex">
+              {user.role === "admin" ? (
+                <Link
+                  href="/admin/users"
+                  className="hidden text-sm font-medium text-[var(--text-muted)] hover:text-[var(--brand)] lg:inline"
+                >
+                  {t("adminUsers")}
+                </Link>
+              ) : null}
               <Link
                 href={`/profile/${user.id}`}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)] transition-opacity hover:opacity-80"
@@ -246,7 +254,17 @@ export function Navbar() {
           <div className="flex flex-col gap-4">{links}</div>
 
           {!loading && user ? (
-            <div className="mt-4 flex items-center gap-3 border-t border-[var(--border)] pt-4">
+            <div className="mt-4 flex flex-col gap-3 border-t border-[var(--border)] pt-4">
+              {user.role === "admin" ? (
+                <Link
+                  href="/admin/users"
+                  className="text-sm font-medium text-[var(--brand)]"
+                  onClick={() => setOpen(false)}
+                >
+                  {t("adminUsers")}
+                </Link>
+              ) : null}
+              <div className="flex items-center gap-3">
               <Link
                 href={`/profile/${user.id}`}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]"
@@ -271,6 +289,7 @@ export function Navbar() {
                   {t("logout")}
                 </button>
               </form>
+              </div>
             </div>
           ) : (
             <div className="mt-4 flex gap-3 border-t border-[var(--border)] pt-4">

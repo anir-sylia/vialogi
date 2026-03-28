@@ -1,4 +1,7 @@
-import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
+import {
+  createSupabaseAnonServerClient,
+  createSupabaseServerClient,
+} from "@/utils/supabase/server";
 
 export type Profile = {
   id: string;
@@ -31,6 +34,27 @@ export type ReviewRow = {
   comment: string | null;
   created_at: string;
 };
+
+/** Tous les profils client + transporteur (requête avec la session courante — réservé aux pages admin côté app). */
+export async function listClientAndTransporteurProfiles(): Promise<Profile[]> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("role", ["client", "transporteur"])
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    return data.map((row) => ({
+      ...row,
+      points: row.points ?? 0,
+      total_transactions: row.total_transactions ?? 0,
+      avg_rating: row.avg_rating ?? 0,
+    })) as Profile[];
+  } catch {
+    return [];
+  }
+}
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
