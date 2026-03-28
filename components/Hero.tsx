@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 type Place = {
   id: string;
@@ -22,6 +23,7 @@ type HeroProps = {
 
 export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
   const t = useTranslations("hero");
+  const tNav = useTranslations("nav");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -29,7 +31,54 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
   const [places, setPlaces] = useState<Place[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function checkAuth() {
+      try {
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        if (!authUser) {
+          if (!retryTimer) {
+            retryTimer = setTimeout(() => {
+              retryTimer = null;
+              void checkAuth();
+            }, 600);
+          }
+          setIsLoggedIn(false);
+          setAuthChecked(true);
+          return;
+        }
+        if (retryTimer) {
+          clearTimeout(retryTimer);
+          retryTimer = null;
+        }
+        setIsLoggedIn(true);
+        setAuthChecked(true);
+      } catch {
+        setIsLoggedIn(false);
+        setAuthChecked(true);
+      }
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void checkAuth();
+    });
+    void checkAuth();
+
+    return () => {
+      if (retryTimer) clearTimeout(retryTimer);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const fetchPlaces = useCallback(
     async (q: string) => {
@@ -110,6 +159,51 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-[var(--text-muted)] sm:text-xl">
             {t("subtitle")}
           </p>
+
+          {authChecked && !isLoggedIn ? (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-muted)]"
+              >
+                <svg
+                  className="h-5 w-5 shrink-0 text-[var(--brand)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  />
+                </svg>
+                {tNav("signIn")}
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+              >
+                <svg
+                  className="h-5 w-5 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632zM18 9a.75.75 0 01.75.75v2.5h2.5a.75.75 0 010 1.5h-2.5v2.5a.75.75 0 01-1.5 0v-2.5h-2.5a.75.75 0 010-1.5h2.5v-2.5A.75.75 0 0118 9z"
+                  />
+                </svg>
+                {tNav("signUp")}
+              </Link>
+            </div>
+          ) : null}
         </div>
 
         <div className="mx-auto mt-12 max-w-xl">
