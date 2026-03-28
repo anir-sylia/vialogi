@@ -25,10 +25,33 @@ type Props = {
   serverError: string | null;
 };
 
+/** Chiffres + un seul séparateur décimal (`,` ou `.`). Le reste est ignoré. */
+function sanitizeDecimalInput(raw: string): string {
+  const s = raw.replace(/[^\d.,]/g, "");
+  let i = 0;
+  let intPart = "";
+  while (i < s.length && /\d/.test(s[i]!)) {
+    intPart += s[i]!;
+    i++;
+  }
+  if (i < s.length && (s[i] === "," || s[i] === ".")) {
+    i++;
+    let frac = "";
+    while (i < s.length && /\d/.test(s[i]!)) {
+      frac += s[i]!;
+      i++;
+    }
+    return frac.length > 0 ? `${intPart},${frac}` : intPart === "" ? "," : `${intPart},`;
+  }
+  return intPart;
+}
+
 export function PostShipmentForm({ locale, serverError }: Props) {
   const t = useTranslations("postForm");
   const localeCode = useLocale();
 
+  const [weightKg, setWeightKg] = useState("");
+  const [priceInput, setPriceInput] = useState("");
   const [originLabel, setOriginLabel] = useState("");
   const [destLabel, setDestLabel] = useState("");
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(
@@ -170,7 +193,10 @@ export function PostShipmentForm({ locale, serverError }: Props) {
                 name="weight_kg"
                 type="text"
                 inputMode="decimal"
+                autoComplete="off"
                 required
+                value={weightKg}
+                onChange={(e) => setWeightKg(sanitizeDecimalInput(e.target.value))}
                 placeholder={t("weightPlaceholder")}
                 className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--text-primary)] shadow-sm outline-none ring-[var(--brand)] focus:border-[var(--brand)] focus:ring-2"
               />
@@ -187,7 +213,10 @@ export function PostShipmentForm({ locale, serverError }: Props) {
                 name="price"
                 type="text"
                 inputMode="decimal"
+                autoComplete="off"
                 required
+                value={priceInput}
+                onChange={(e) => setPriceInput(sanitizeDecimalInput(e.target.value))}
                 placeholder={t("pricePlaceholder")}
                 className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--text-primary)] shadow-sm outline-none ring-[var(--brand)] focus:border-[var(--brand)] focus:ring-2"
               />
