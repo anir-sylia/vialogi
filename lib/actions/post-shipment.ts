@@ -184,36 +184,32 @@ export async function submitShipment(formData: FormData) {
     };
 
     if (user) {
-      // 1) Insert avec le JWT utilisateur (RLS OK si script 008 / politiques à jour).
-      // 2) Secours : service_role si la clé est configurée (ex. clé erronée avant : on tente quand même le JWT).
+      // 1) D’abord service_role : contourne la RLS (résout la plupart des « rls_denied » en prod si la clé Vercel est bonne).
+      // 2) Secours : JWT utilisateur si l’insert service_role échoue (clé invalide, etc.).
       const svc = createSupabaseServiceRoleClientIfConfigured();
-      const { error: authInsertErr } = await authSupabase
-        .from("shipments")
-        .insert(row);
-      if (!authInsertErr) {
-        insertError = null;
-      } else if (svc) {
+      if (svc) {
         const { error: svcErr } = await svc.from("shipments").insert(row);
         if (!svcErr) {
           insertError = null;
-        } else if (
-          isInvalidServiceRoleOrJwtError(svcErr) &&
-          !isInvalidServiceRoleOrJwtError(authInsertErr)
-        ) {
-          insertError = authInsertErr;
-          console.error(
-            "submitShipment: service_role key rejected, surfacing auth error instead",
-            svcErr.message,
-          );
         } else {
-          insertError = svcErr;
-          console.error("submitShipment: auth insert failed, service_role also failed", {
-            auth: authInsertErr.message,
-            service: svcErr.message,
-          });
+          const { error: authErr } = await authSupabase
+            .from("shipments")
+            .insert(row);
+          if (!authErr) {
+            insertError = null;
+          } else {
+            insertError = authErr;
+            console.error("submitShipment: service_role + auth insert both failed", {
+              service: svcErr.message,
+              auth: authErr.message,
+            });
+          }
         }
       } else {
-        insertError = authInsertErr;
+        const { error: authErr } = await authSupabase
+          .from("shipments")
+          .insert(row);
+        insertError = authErr ?? null;
       }
     } else {
       const { error } = await createSupabaseAnonServerClient()
