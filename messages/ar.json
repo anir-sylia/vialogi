@@ -122,6 +122,8 @@
     "weightPlaceholder": "مثال: 1250",
     "price": "السعر المقترح (درهم)",
     "pricePlaceholder": "مثال: 4500",
+    "parcelPhoto": "صورة الطرد (اختياري)",
+    "parcelPhotoHint": "JPEG أو PNG أو WebP أو GIF — بحد أقصى 5 م.ب.",
     "submit": "نشر الشحنة",
     "submitting": "جاري النشر…",
     "mapSectionLabel": "المسار",
@@ -132,6 +134,7 @@
       "required_fields": "المنطلق والوجهة مطلوبان.",
       "invalid_weight": "أدخل وزنًا صالحًا (رقم أكبر من 0).",
       "invalid_price": "أدخل سعرًا صالحًا (رقم موجب أو صفر).",
+      "invalid_photo": "صورة غير صالحة: JPEG أو PNG أو WebP أو GIF فقط، بحد أقصى 5 م.ب.",
       "unknown_error": "حدث خطأ. حاول مرة أخرى.",
       "db": "تعذر الحفظ في قاعدة البيانات. تحقق من Supabase وصلاحيات RLS. إن استمر الأمر: نفّذ سكربت SQL 008 في Supabase، أو أضف SUPABASE_SERVICE_ROLE_KEY (مفتاح service_role) في Vercel ثم أعد النشر.",
       "profile_required": "الملف الشخصي ناقص في قاعدة البيانات. سجّل الخروج ثم أنشئ حسابًا من جديد، أو تواصل مع الدعم.",
@@ -144,6 +147,7 @@
   "shipments": {
     "heading": "الشحنات المتاحة",
     "subheading": "بيانات مباشرة من Supabase. بدون بحث: آخر 20 شحنة. مع مدينة: حتى 50 إعلانًا يطابق مدينة الانطلاق فقط.",
+    "parcelPhotoAlt": "صورة الطرد",
     "cardRoute": "المسار",
     "filteredBy": "تصفية: « {q} »",
     "empty": "لا توجد شحنات حاليًا.",
@@ -161,6 +165,7 @@
   "shipmentDetail": {
     "back": "العودة إلى الرئيسية",
     "route": "المسار",
+    "parcelPhoto": "صورة الطرد",
     "weight": "الوزن",
     "price": "السعر",
     "publishedAt": "تاريخ النشر",

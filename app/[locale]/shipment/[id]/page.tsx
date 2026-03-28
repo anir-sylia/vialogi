@@ -136,6 +136,16 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
       )}
 
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
+        {shipment.parcel_photo_url ? (
+          <div className="mb-6 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={shipment.parcel_photo_url}
+              alt={t("parcelPhoto")}
+              className="max-h-[min(24rem,50vh)] w-full object-contain"
+            />
+          </div>
+        ) : null}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">

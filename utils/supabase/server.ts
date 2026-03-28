@@ -19,9 +19,17 @@ export function createSupabaseAnonServerClient() {
  * Server Components avec session — mêmes vars + cookies Next.js.
  */
 const emptyServerAuthStorage = {
-  getItem: (_key: string) => null as string | null,
-  setItem: (_key: string, _value: string) => {},
-  removeItem: (_key: string) => {},
+  getItem: (key: string) => {
+    void key;
+    return null as string | null;
+  },
+  setItem: (key: string, value: string) => {
+    void key;
+    void value;
+  },
+  removeItem: (key: string) => {
+    void key;
+  },
 };
 
 /** Service-role client for server-only operations (bypasses RLS). Null if not configured. */

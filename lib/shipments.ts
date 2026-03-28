@@ -13,6 +13,7 @@ export type ShipmentRow = {
   removed_by: string | null;
   removed_at: string | null;
   removal_reason: string | null;
+  parcel_photo_url: string | null;
 };
 
 export const PUBLIC_SHIPMENT_STATUSES = ["open", "assigned", "completed"] as const;
@@ -54,7 +55,7 @@ export async function listShipments(
 
     let query = supabase
       .from("shipments")
-      .select("id, created_at, origin, destination, weight_kg, price")
+      .select("id, created_at, origin, destination, weight_kg, price, parcel_photo_url")
       .in("status", [...PUBLIC_SHIPMENT_STATUSES])
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -71,7 +72,10 @@ export async function listShipments(
       return [] as ShipmentRow[];
     }
 
-    return (data ?? []) as ShipmentRow[];
+    return (data ?? []).map((r) => ({
+      ...r,
+      parcel_photo_url: r.parcel_photo_url ?? null,
+    })) as ShipmentRow[];
   } catch (e) {
     console.error("listShipments:", e);
     return [] as ShipmentRow[];
@@ -124,6 +128,7 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
       removed_by: data.removed_by ?? null,
       removed_at: data.removed_at ?? null,
       removal_reason: data.removal_reason ?? null,
+      parcel_photo_url: data.parcel_photo_url ?? null,
     } as ShipmentRow;
   } catch {
     return null;

@@ -1,6 +1,8 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -15,8 +17,26 @@ import {
 } from "@/utils/supabase/env";
 import { isPostingEnabled } from "@/lib/posting";
 
+const MAX_PARCEL_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PARCEL_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+const PARCEL_PHOTOS_BUCKET = "parcel-photos";
+
 function pgCode(err: { code?: string }): string {
   return String(err.code ?? "");
+}
+
+function extFromMime(mime: string): string {
+  if (mime === "image/jpeg") return "jpg";
+  if (mime === "image/png") return "png";
+  if (mime === "image/webp") return "webp";
+  if (mime === "image/gif") return "gif";
+  return "jpg";
 }
 
 function isRlsOrPermissionError(err: {
@@ -25,7 +45,6 @@ function isRlsOrPermissionError(err: {
 }): boolean {
   const msg = (err.message ?? "").toLowerCase();
   const code = pgCode(err);
-  // Ne pas utiliser "violates check constraint" / "new row violates" seuls : ce n’est pas du RLS.
   return (
     code === "42501" ||
     code === "PGRST301" ||
@@ -55,6 +74,7 @@ function fail(
     | "required_fields"
     | "invalid_weight"
     | "invalid_price"
+    | "invalid_photo"
     | "db"
     | "profile_required"
     | "rls_denied"
@@ -114,6 +134,37 @@ async function ensureUserProfile(
   return true;
 }
 
+async function uploadParcelPhotoAndUpdateRow(
+  client: SupabaseClient,
+  shipmentId: string,
+  file: File,
+): Promise<void> {
+  const ext = extFromMime(file.type);
+  const path = `${shipmentId}/${randomUUID()}.${ext}`;
+  const bytes = await file.arrayBuffer();
+  const { error: upErr } = await client.storage
+    .from(PARCEL_PHOTOS_BUCKET)
+    .upload(path, bytes, {
+      contentType: file.type,
+      upsert: false,
+    });
+  if (upErr) {
+    console.error("uploadParcelPhoto:", upErr.message);
+    return;
+  }
+  const { data: pub } = client.storage
+    .from(PARCEL_PHOTOS_BUCKET)
+    .getPublicUrl(path);
+  const publicUrl = pub.publicUrl;
+  const { error: updErr } = await client
+    .from("shipments")
+    .update({ parcel_photo_url: publicUrl })
+    .eq("id", shipmentId);
+  if (updErr) {
+    console.error("parcel_photo_url update:", updErr.message);
+  }
+}
+
 /** Inserts a row into `public.shipments` using the Supabase server client (env anon key). */
 export async function submitShipment(formData: FormData) {
   const rawLocale = String(formData.get("locale") ?? routing.defaultLocale);
@@ -148,8 +199,12 @@ export async function submitShipment(formData: FormData) {
     return fail(locale, "env");
   }
 
-  // Do not call redirect() inside try/catch — Next.js implements redirect via a
-  // thrown error; catching it would turn real failures into `unknown_error`.
+  const rawPhoto = formData.get("parcel_photo");
+  let photoFile: File | null = null;
+  if (rawPhoto instanceof File && rawPhoto.size > 0) {
+    photoFile = rawPhoto;
+  }
+
   let insertError: {
     message: string;
     code?: string;
@@ -157,14 +212,29 @@ export async function submitShipment(formData: FormData) {
     hint?: string;
   } | null = null;
   let authedUser: User | null = null;
+  let insertedId: string | null = null;
+  let authSupabase: Awaited<ReturnType<typeof createSupabaseServerClient>> | null =
+    null;
+
   try {
-    const authSupabase = await createSupabaseServerClient();
+    authSupabase = await createSupabaseServerClient();
     let { data: { user } } = await authSupabase.auth.getUser();
     if (!user) {
       const { data: sess } = await authSupabase.auth.getSession();
       user = sess.session?.user ?? null;
     }
     authedUser = user ?? null;
+
+    if (photoFile) {
+      if (!user) {
+        photoFile = null;
+      } else if (
+        photoFile.size > MAX_PARCEL_PHOTO_BYTES ||
+        !ALLOWED_PARCEL_PHOTO_TYPES.has(photoFile.type)
+      ) {
+        return fail(locale, "invalid_photo");
+      }
+    }
 
     if (user) {
       const ok = await ensureUserProfile(authSupabase, user);
@@ -183,38 +253,70 @@ export async function submitShipment(formData: FormData) {
     };
 
     if (user) {
-      // 1) D’abord service_role : contourne la RLS (résout la plupart des « rls_denied » en prod si la clé Vercel est bonne).
-      // 2) Secours : JWT utilisateur si l’insert service_role échoue (clé invalide, etc.).
       const svc = createSupabaseServiceRoleClientIfConfigured();
       if (svc) {
-        const { error: svcErr } = await svc.from("shipments").insert(row);
-        if (!svcErr) {
+        const { data: d1, error: svcErr } = await svc
+          .from("shipments")
+          .insert(row)
+          .select("id")
+          .single();
+        if (!svcErr && d1?.id) {
+          insertedId = d1.id;
           insertError = null;
-        } else {
-          const { error: authErr } = await authSupabase
+        } else if (svcErr) {
+          const { data: d2, error: authErr } = await authSupabase
             .from("shipments")
-            .insert(row);
-          if (!authErr) {
+            .insert(row)
+            .select("id")
+            .single();
+          if (!authErr && d2?.id) {
+            insertedId = d2.id;
             insertError = null;
           } else {
-            insertError = authErr;
+            insertError = authErr ?? svcErr;
             console.error("submitShipment: service_role + auth insert both failed", {
               service: svcErr.message,
-              auth: authErr.message,
+              auth: authErr?.message,
             });
           }
         }
       } else {
-        const { error: authErr } = await authSupabase
+        const { data: d, error: authErr } = await authSupabase
           .from("shipments")
-          .insert(row);
-        insertError = authErr ?? null;
+          .insert(row)
+          .select("id")
+          .single();
+        if (!authErr && d?.id) {
+          insertedId = d.id;
+          insertError = null;
+        } else {
+          insertError = authErr ?? null;
+        }
       }
     } else {
-      const { error } = await createSupabaseAnonServerClient()
+      const { data: d, error } = await createSupabaseAnonServerClient()
         .from("shipments")
-        .insert(row);
-      if (error) insertError = error;
+        .insert(row)
+        .select("id")
+        .single();
+      if (!error && d?.id) {
+        insertedId = d.id;
+        insertError = null;
+      } else {
+        insertError = error;
+      }
+    }
+
+    if (
+      !insertError &&
+      insertedId &&
+      photoFile &&
+      user &&
+      authSupabase
+    ) {
+      const svc = createSupabaseServiceRoleClientIfConfigured();
+      const uploadClient = svc ?? authSupabase;
+      await uploadParcelPhotoAndUpdateRow(uploadClient, insertedId, photoFile);
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -250,7 +352,11 @@ export async function submitShipment(formData: FormData) {
     if (pgCode(insertError) === "23514") {
       return fail(locale, "db");
     }
-    if (authedUser && getSupabaseServiceRoleKey() && isInvalidServiceRoleOrJwtError(insertError)) {
+    if (
+      authedUser &&
+      getSupabaseServiceRoleKey() &&
+      isInvalidServiceRoleOrJwtError(insertError)
+    ) {
       return fail(locale, "bad_service_key");
     }
     if (authedUser && !getSupabaseServiceRoleKey()) {

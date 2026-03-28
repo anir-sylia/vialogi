@@ -54,7 +54,11 @@ export function PostShipmentForm({ locale, serverError }: Props) {
   const bothGeocoded = Boolean(originCoords && destCoords);
 
   return (
-    <form action={submitShipment} className="mt-8 space-y-6">
+    <form
+      action={submitShipment}
+      encType="multipart/form-data"
+      className="mt-8 space-y-6"
+    >
       <input type="hidden" name="locale" value={locale} />
 
       {serverError ? (
@@ -113,6 +117,25 @@ export function PostShipmentForm({ locale, serverError }: Props) {
               )}
             </div>
           ) : null}
+
+          <div>
+            <label
+              htmlFor="parcel_photo"
+              className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
+            >
+              {t("parcelPhoto")}
+            </label>
+            <p className="mb-2 text-xs text-[var(--text-muted)]">
+              {t("parcelPhotoHint")}
+            </p>
+            <input
+              id="parcel_photo"
+              name="parcel_photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="w-full max-w-md text-sm text-[var(--text-primary)] file:me-3 file:rounded-lg file:border-0 file:bg-[var(--surface-muted)] file:px-4 file:py-2 file:font-medium file:text-[var(--text-primary)]"
+            />
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>

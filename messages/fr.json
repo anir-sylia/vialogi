@@ -122,6 +122,8 @@
     "weightPlaceholder": "Ex. 1250",
     "price": "Prix proposé (MAD)",
     "pricePlaceholder": "Ex. 4500",
+    "parcelPhoto": "Photo du colis (optionnel)",
+    "parcelPhotoHint": "JPEG, PNG, WebP ou GIF — max. 5 Mo.",
     "submit": "Publier l'envoi",
     "submitting": "Publication…",
     "mapSectionLabel": "Itinéraire",
@@ -132,6 +134,7 @@
       "required_fields": "L'origine et la destination sont obligatoires.",
       "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
       "invalid_price": "Indiquez un prix valide (nombre positif ou zéro).",
+      "invalid_photo": "Photo invalide : JPEG, PNG, WebP ou GIF uniquement, taille max. 5 Mo.",
       "unknown_error": "Une erreur est survenue. Réessayez.",
       "db": "Impossible d'enregistrer dans la base. Vérifiez Supabase et les droits RLS. Si ça bloque encore : exécutez le script SQL 008 dans Supabase, ou ajoutez la variable secrète SUPABASE_SERVICE_ROLE_KEY (clé service_role du dashboard) dans Vercel puis redéployez.",
       "profile_required": "Votre profil est incomplet côté base de données. Déconnectez-vous puis inscrivez-vous à nouveau, ou contactez le support.",
@@ -144,6 +147,7 @@
   "shipments": {
     "heading": "Envois disponibles",
     "subheading": "Données en direct depuis Supabase. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
+    "parcelPhotoAlt": "Photo du colis",
     "cardRoute": "Trajet",
     "filteredBy": "Filtre : « {q} »",
     "empty": "Aucun envoi pour le moment.",
@@ -161,6 +165,7 @@
   "shipmentDetail": {
     "back": "Retour à l'accueil",
     "route": "Trajet",
+    "parcelPhoto": "Photo du colis",
     "weight": "Poids",
     "price": "Prix",
     "publishedAt": "Date de publication",
