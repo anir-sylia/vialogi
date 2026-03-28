@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { signOut } from "@/lib/actions/auth";
+import { isPostingEnabled } from "@/lib/posting";
 
 type UserInfo = {
   id: string;
@@ -178,7 +179,7 @@ export function Navbar() {
 
           <LanguageSwitcher />
 
-          {user?.role === "client" ? (
+          {isPostingEnabled() && user?.role === "client" ? (
             <>
               <Link
                 href={{ pathname: "/post" }}
@@ -195,7 +196,7 @@ export function Navbar() {
                 +
               </Link>
             </>
-          ) : !user ? (
+          ) : isPostingEnabled() && !user ? (
             <>
               <Link
                 href={{ pathname: "/post" }}
@@ -310,7 +311,7 @@ export function Navbar() {
             </div>
           )}
 
-          {user?.role === "client" || !user ? (
+          {isPostingEnabled() && (user?.role === "client" || !user) ? (
             <Link
               href={{ pathname: "/post" }}
               prefetch={true}

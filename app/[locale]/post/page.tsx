@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { PostShipmentForm } from "@/components/post/PostShipmentForm";
+import { isPostingEnabled } from "@/lib/posting";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { getProfile } from "@/lib/auth";
 
@@ -33,6 +34,10 @@ function parseError(raw: string | string[] | undefined): ErrorCode | null {
 export default async function PostPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  if (!isPostingEnabled()) {
+    return redirect({ href: "/", locale });
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();

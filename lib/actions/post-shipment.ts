@@ -13,6 +13,7 @@ import {
   getSupabaseServiceRoleKey,
   isSupabasePublicEnvConfigured,
 } from "@/utils/supabase/env";
+import { isPostingEnabled } from "@/lib/posting";
 
 function fail(
   locale: string,
@@ -84,6 +85,10 @@ export async function submitShipment(formData: FormData) {
   const locale = hasLocale(routing.locales, rawLocale)
     ? rawLocale
     : routing.defaultLocale;
+
+  if (!isPostingEnabled()) {
+    return redirect({ href: "/", locale });
+  }
 
   const origin = String(formData.get("origin") ?? "").trim();
   const destination = String(formData.get("destination") ?? "").trim();
