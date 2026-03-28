@@ -178,6 +178,7 @@ export async function submitShipment(formData: FormData) {
       destination,
       weight_kg: weight,
       price,
+      status: "open" as const,
       ...(user ? { user_id: user.id } : {}),
     };
 
