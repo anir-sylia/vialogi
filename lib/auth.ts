@@ -11,6 +11,8 @@ export type Profile = {
   last_name: string;
   phone: string;
   transport_type: string | null;
+  avatar_url: string | null;
+  transport_photo_url: string | null;
   points: number;
   total_transactions: number;
   avg_rating: number;
@@ -48,6 +50,8 @@ export async function listClientAndTransporteurProfiles(): Promise<Profile[]> {
     if (error || !data) return [];
     return data.map((row) => ({
       ...row,
+      avatar_url: row.avatar_url ?? null,
+      transport_photo_url: row.transport_photo_url ?? null,
       points: row.points ?? 0,
       total_transactions: row.total_transactions ?? 0,
       avg_rating: row.avg_rating ?? 0,
@@ -68,6 +72,8 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     if (error || !data) return null;
     return {
       ...data,
+      avatar_url: data.avatar_url ?? null,
+      transport_photo_url: data.transport_photo_url ?? null,
       points: data.points ?? 0,
       total_transactions: data.total_transactions ?? 0,
       avg_rating: data.avg_rating ?? 0,

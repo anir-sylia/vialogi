@@ -5,9 +5,12 @@ import { Link } from "@/i18n/navigation";
 import { getProfile, getReviewsForUser } from "@/lib/auth";
 import type { Profile } from "@/lib/auth";
 import { ReviewsList } from "@/components/shipment/ReviewsList";
+import { ProfilePhotoForms } from "@/components/profile/ProfilePhotoForms";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function Stars({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) {
@@ -28,12 +31,17 @@ function Stars({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) 
   );
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function ProfilePage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
 
   const targetProfile = await getProfile(id);
   if (!targetProfile) notFound();
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwnProfile = Boolean(user && user.id === id);
 
   const t = await getTranslations("profile");
   const reviews = await getReviewsForUser(id);
@@ -55,6 +63,12 @@ export default async function ProfilePage({ params }: Props) {
         ? "bg-rose-50 text-rose-700 border-rose-200"
         : "bg-emerald-50 text-emerald-700 border-emerald-200";
 
+  const errRaw = typeof sp.e === "string" ? sp.e : null;
+  const photoError =
+    errRaw === "invalid_photo" || errRaw === "forbidden" || errRaw === "db"
+      ? t(`photoError_${errRaw}` as Parameters<typeof t>[0])
+      : null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
@@ -64,11 +78,31 @@ export default async function ProfilePage({ params }: Props) {
         {t("backHome")}
       </Link>
 
+      {photoError ? (
+        <div
+          className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          role="alert"
+        >
+          {photoError}
+        </div>
+      ) : null}
+
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--brand)]/10 text-2xl font-bold text-[var(--brand)]">
-            {targetProfile.first_name.charAt(0).toUpperCase()}
-          </div>
+          {targetProfile.avatar_url ? (
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={targetProfile.avatar_url}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand)]/10 text-2xl font-bold text-[var(--brand)]">
+              {targetProfile.first_name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">
               {targetProfile.first_name} {targetProfile.last_name}
@@ -83,6 +117,22 @@ export default async function ProfilePage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {targetProfile.role === "transporteur" && targetProfile.transport_photo_url ? (
+          <div className="mt-6">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
+              {t("transportPhotoLabel")}
+            </p>
+            <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={targetProfile.transport_photo_url}
+                alt={t("transportPhotoAlt")}
+                className="max-h-64 w-full object-cover"
+              />
+            </div>
+          </div>
+        ) : null}
 
         <div className="mt-6 grid grid-cols-3 gap-4 rounded-xl bg-[var(--surface-muted)] p-4">
           <div className="text-center">
@@ -109,6 +159,14 @@ export default async function ProfilePage({ params }: Props) {
             <span className="font-medium">{t("phone")}:</span> {targetProfile.phone}
           </div>
         )}
+
+        {isOwnProfile && (targetProfile.role === "client" || targetProfile.role === "transporteur") ? (
+          <ProfilePhotoForms
+            profileId={id}
+            locale={locale}
+            isTransporteur={targetProfile.role === "transporteur"}
+          />
+        ) : null}
       </div>
 
       <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">

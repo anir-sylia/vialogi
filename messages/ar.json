@@ -237,7 +237,19 @@
     "transactions": "المعاملات",
     "avgRating": "متوسط التقييم",
     "phone": "الهاتف",
-    "reviewsHeading": "التقييمات المستلمة"
+    "reviewsHeading": "التقييمات المستلمة",
+    "avatarHeading": "صورة الملف الشخصي",
+    "avatarHint": "JPEG أو PNG أو WebP أو GIF — بحد أقصى 4 م.ب.",
+    "uploadAvatar": "حفظ الصورة",
+    "transportPhotoHeading": "صورة المركبة / النقل",
+    "transportPhotoHint": "تظهر في ملفك (للناقلين). نفس الصيغ والحد الأقصى.",
+    "transportPhotoLabel": "النقل",
+    "transportPhotoAlt": "صورة نوع النقل",
+    "uploadTransportPhoto": "حفظ",
+    "uploading": "جاري الإرسال…",
+    "photoError_invalid_photo": "صورة غير صالحة أو كبيرة جدًا (حد أقصى 4 م.ب).",
+    "photoError_forbidden": "غير مسموح بهذا الإجراء لهذا الملف.",
+    "photoError_db": "تعذر الحفظ. أعد المحاولة."
   },
   "chat": {
     "back": "رجوع",

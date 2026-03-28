@@ -237,7 +237,19 @@
     "transactions": "Transactions",
     "avgRating": "Note moyenne",
     "phone": "Téléphone",
-    "reviewsHeading": "Avis reçus"
+    "reviewsHeading": "Avis reçus",
+    "avatarHeading": "Photo de profil",
+    "avatarHint": "JPEG, PNG, WebP ou GIF — max. 4 Mo.",
+    "uploadAvatar": "Enregistrer la photo",
+    "transportPhotoHeading": "Photo du véhicule / transport",
+    "transportPhotoHint": "Visible sur votre profil (transporteurs). Même formats et taille max.",
+    "transportPhotoLabel": "Transport",
+    "transportPhotoAlt": "Photo du type de transport",
+    "uploadTransportPhoto": "Enregistrer",
+    "uploading": "Envoi…",
+    "photoError_invalid_photo": "Image invalide ou trop volumineuse (max. 4 Mo).",
+    "photoError_forbidden": "Action non autorisée pour ce profil.",
+    "photoError_db": "Enregistrement impossible. Réessayez."
   },
   "chat": {
     "back": "Retour",
