@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { isPostingEnabled } from "@/lib/posting";
 
 type Place = {
   id: string;
@@ -33,6 +34,7 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
   const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profileRole, setProfileRole] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
             }, 600);
           }
           setIsLoggedIn(false);
+          setProfileRole(null);
           setAuthChecked(true);
           return;
         }
@@ -60,9 +63,16 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
           retryTimer = null;
         }
         setIsLoggedIn(true);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", authUser.id)
+          .maybeSingle();
+        setProfileRole(profile?.role ?? null);
         setAuthChecked(true);
       } catch {
         setIsLoggedIn(false);
+        setProfileRole(null);
         setAuthChecked(true);
       }
     }
@@ -201,6 +211,35 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
                   />
                 </svg>
                 {tNav("signUp")}
+              </Link>
+            </div>
+          ) : null}
+
+          {authChecked &&
+          isLoggedIn &&
+          profileRole === "client" &&
+          isPostingEnabled() ? (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={{ pathname: "/post" }}
+                prefetch={true}
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-6 py-3 text-base font-semibold text-white shadow-md transition-opacity hover:opacity-90 sm:px-8 sm:py-3.5"
+              >
+                <svg
+                  className="h-5 w-5 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                {tNav("postAnnouncement")}
               </Link>
             </div>
           ) : null}
