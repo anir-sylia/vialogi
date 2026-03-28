@@ -14,7 +14,44 @@ type UserInfo = {
   firstName: string;
   role: "client" | "transporteur" | "admin";
   points: number;
+  avatarUrl: string | null;
 } | null;
+
+function NavProfileAvatarLink({
+  userId,
+  firstName,
+  avatarUrl,
+  onClick,
+}: {
+  userId: string;
+  firstName: string;
+  avatarUrl: string | null;
+  onClick?: () => void;
+}) {
+  const initial = firstName.charAt(0).toUpperCase();
+  const url = avatarUrl?.trim();
+  return (
+    <Link
+      href={`/profile/${userId}`}
+      onClick={onClick}
+      className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)] shadow-sm ring-2 ring-white transition-opacity hover:opacity-80"
+      aria-label={firstName}
+    >
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- URL Supabase Storage
+        <img
+          src={url}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center">
+          {initial}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -48,7 +85,7 @@ export function Navbar() {
         }
         const { data: profile } = await supabase
           .from("profiles")
-          .select("first_name, role, points")
+          .select("first_name, role, points, avatar_url")
           .eq("id", authUser.id)
           .maybeSingle();
         if (profile) {
@@ -57,6 +94,8 @@ export function Navbar() {
             firstName: profile.first_name,
             role: profile.role,
             points: profile.points ?? 0,
+            avatarUrl:
+              (profile as { avatar_url?: string | null }).avatar_url ?? null,
           });
         } else {
           setUser(null);
@@ -188,12 +227,11 @@ export function Navbar() {
                   {t("adminUsers")}
                 </Link>
               ) : null}
-              <Link
-                href={`/profile/${user.id}`}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)] transition-opacity hover:opacity-80"
-              >
-                {user.firstName.charAt(0).toUpperCase()}
-              </Link>
+              <NavProfileAvatarLink
+                userId={user.id}
+                firstName={user.firstName}
+                avatarUrl={user.avatarUrl}
+              />
               <span className="max-w-[100px] truncate text-sm font-medium text-[var(--text-primary)]">
                 {user.firstName}
               </span>
@@ -206,7 +244,7 @@ export function Navbar() {
                 <input type="hidden" name="locale" value={locale} />
                 <button
                   type="submit"
-                  className="text-xs font-medium text-[var(--text-muted)] hover:text-red-600"
+                  className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
                 >
                   {t("logout")}
                 </button>
@@ -321,13 +359,12 @@ export function Navbar() {
                 </Link>
               ) : null}
               <div className="flex items-center gap-3">
-              <Link
-                href={`/profile/${user.id}`}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand)]/10 text-xs font-bold text-[var(--brand)]"
+              <NavProfileAvatarLink
+                userId={user.id}
+                firstName={user.firstName}
+                avatarUrl={user.avatarUrl}
                 onClick={() => setOpen(false)}
-              >
-                {user.firstName.charAt(0).toUpperCase()}
-              </Link>
+              />
               <span className="flex-1 truncate text-sm font-medium text-[var(--text-primary)]">
                 {user.firstName}
                 {user.points > 0 && (
@@ -340,7 +377,7 @@ export function Navbar() {
                 <input type="hidden" name="locale" value={locale} />
                 <button
                   type="submit"
-                  className="text-xs font-medium text-red-600 hover:underline"
+                  className="text-xs font-medium text-[var(--text-muted)] underline-offset-2 transition-colors hover:text-[var(--text-primary)] hover:underline"
                 >
                   {t("logout")}
                 </button>
