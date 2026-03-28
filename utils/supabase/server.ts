@@ -18,13 +18,31 @@ export function createSupabaseAnonServerClient() {
 /**
  * Server Components avec session — mêmes vars + cookies Next.js.
  */
+const emptyServerAuthStorage = {
+  getItem: (_key: string) => null as string | null,
+  setItem: (_key: string, _value: string) => {},
+  removeItem: (_key: string) => {},
+};
+
 /** Service-role client for server-only operations (bypasses RLS). Null if not configured. */
 export function createSupabaseServiceRoleClientIfConfigured() {
   const { url } = getSupabasePublicEnvOrThrow();
   const key = getSupabaseServiceRoleKey();
   if (!key) return null;
+  // Clés sb_secret_ : apikey + Authorization identiques (doc Supabase). Pas de session résiduelle.
   return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+      storage: emptyServerAuthStorage,
+    },
+    global: {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+    },
   });
 }
 

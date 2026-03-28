@@ -25,17 +25,15 @@ function isRlsOrPermissionError(err: {
 }): boolean {
   const msg = (err.message ?? "").toLowerCase();
   const code = pgCode(err);
+  // Ne pas utiliser "violates check constraint" / "new row violates" seuls : ce n’est pas du RLS.
   return (
     code === "42501" ||
     code === "PGRST301" ||
-    msg.includes("row-level security") ||
-    msg.includes("violates row-level") ||
-    msg.includes("rls policy") ||
-    msg.includes("permission denied") ||
-    msg.includes("policy violation") ||
     msg.includes("pgrst301") ||
-    msg.includes("new row violates") ||
-    msg.includes("violates check constraint")
+    msg.includes("row-level security policy") ||
+    msg.includes("row level security policy") ||
+    msg.includes("violates row-level security") ||
+    msg.includes("rls policy")
   );
 }
 
@@ -247,6 +245,9 @@ export async function submitShipment(formData: FormData) {
     }
     if (pgCode(insertError) === "23502") {
       return fail(locale, "profile_required");
+    }
+    if (pgCode(insertError) === "23514") {
+      return fail(locale, "db");
     }
     if (authedUser && getSupabaseServiceRoleKey() && isInvalidServiceRoleOrJwtError(insertError)) {
       return fail(locale, "bad_service_key");
