@@ -285,6 +285,13 @@
     "sendFailed": "Envoi impossible. Vérifiez la connexion et que le script SQL 016 (chat) est exécuté sur Supabase.",
     "inputPlaceholder": "Écrire un message…",
     "send": "Envoyer",
+    "attachPhoto": "Envoyer une photo",
+    "voiceMessage": "Message vocal",
+    "stopRecording": "Arrêter l’enregistrement",
+    "recording": "Enregistrement",
+    "uploading": "Envoi en cours…",
+    "notificationImage": "Photo",
+    "notificationAudio": "Message vocal",
     "mock": {
       "driverName": "Transporteur",
       "eta": "~45 min",

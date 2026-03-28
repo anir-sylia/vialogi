@@ -21,6 +21,8 @@ export async function listMessageInboxThreads(
       shipment_id,
       content,
       created_at,
+      message_kind,
+      media_url,
       shipments (
         id,
         origin,
@@ -55,13 +57,21 @@ export async function listMessageInboxThreads(
 
     seen.add(sid);
     const content = (row.content as string) ?? "";
+    const kind = (row as { message_kind?: string }).message_kind ?? "text";
+    let preview = content;
+    if (kind === "image") {
+      preview = content.trim() ? `📷 ${content}` : "📷";
+    } else if (kind === "audio") {
+      preview = content.trim() ? `🎤 ${content}` : "🎤";
+    } else if (preview.length > 120) {
+      preview = `${preview.slice(0, 120)}…`;
+    }
     threads.push({
       shipmentId: sid,
       origin: s.origin,
       destination: s.destination,
       lastMessageAt: row.created_at as string,
-      lastMessagePreview:
-        content.length > 120 ? `${content.slice(0, 120)}…` : content,
+      lastMessagePreview: preview,
     });
   }
 

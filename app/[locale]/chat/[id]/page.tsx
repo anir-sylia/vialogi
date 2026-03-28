@@ -43,7 +43,7 @@ export default async function ChatPage({ params }: Props) {
 
   const { data: existingMessages } = await supabase
     .from("messages")
-    .select("id, sender_id, content, created_at")
+    .select("id, sender_id, content, created_at, message_kind, media_url")
     .eq("shipment_id", id)
     .order("created_at", { ascending: true })
     .limit(200);
@@ -59,26 +59,39 @@ export default async function ChatPage({ params }: Props) {
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, role")
+    .select("id, first_name, last_name, role, avatar_url")
     .in("id", Array.from(senderIds));
 
-  const profileMap: Record<string, { firstName: string; lastName: string; role: string }> = {};
+  const profileMap: Record<
+    string,
+    { firstName: string; lastName: string; role: string; avatarUrl: string | null }
+  > = {};
   for (const p of profiles ?? []) {
     profileMap[p.id] = {
       firstName: p.first_name,
       lastName: p.last_name,
       role: p.role,
+      avatarUrl: p.avatar_url ?? null,
     };
   }
 
   const routeTitle = `${shipment.origin} → ${shipment.destination}`;
 
   const messages = (existingMessages ?? []).map(
-    (m: { id: string; sender_id: string; content: string; created_at: string }) => ({
+    (m: {
+      id: string;
+      sender_id: string;
+      content: string;
+      created_at: string;
+      message_kind?: string | null;
+      media_url?: string | null;
+    }) => ({
       id: m.id,
       senderId: m.sender_id,
       content: m.content,
       createdAt: m.created_at,
+      kind: (m.message_kind as "text" | "image" | "audio" | undefined) ?? "text",
+      mediaUrl: m.media_url ?? null,
       senderName: profileMap[m.sender_id]
         ? `${profileMap[m.sender_id].firstName} ${profileMap[m.sender_id].lastName}`
         : "?",
