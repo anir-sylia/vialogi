@@ -214,6 +214,8 @@
   },
   "reviews": {
     "heading": "Avis",
+    "globalReviewsHint": "Les avis affichés viennent du profil (toutes les annonces confondues).",
+    "reviewsReceivedBy": "Avis reçus par {name}",
     "noReviews": "Aucun avis pour le moment.",
     "rateUser": "Évaluer {name}",
     "commentPlaceholder": "Commentaire (optionnel)",

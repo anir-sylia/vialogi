@@ -214,6 +214,8 @@
   },
   "reviews": {
     "heading": "التقييمات",
+    "globalReviewsHint": "التقييمات المعروضة هي نفسها الموجودة في الملف الشخصي (جميع الإعلانات).",
+    "reviewsReceivedBy": "التقييمات المستلمة من {name}",
     "noReviews": "لا توجد تقييمات حاليًا.",
     "rateUser": "تقييم {name}",
     "commentPlaceholder": "تعليق (اختياري)",

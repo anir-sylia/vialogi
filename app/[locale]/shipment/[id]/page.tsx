@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
 import { getShipmentById } from "@/lib/shipments";
-import { getProfile, getOffersForShipment, getReviewsForShipment } from "@/lib/auth";
+import {
+  getProfile,
+  getOffersForShipment,
+  getReviewsForUser,
+  userHasReviewedShipment,
+} from "@/lib/auth";
 import type { Profile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { OfferForm } from "@/components/shipment/OfferForm";
@@ -70,11 +75,26 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   const canChat = isOwner || isTransporteur;
 
   const offers = await getOffersForShipment(id);
-  const reviews = await getReviewsForShipment(id);
+
+  const [reviewsAboutOwner, reviewsAboutTransporteur, hasReviewed] =
+    await Promise.all([
+      shipment.user_id ? getReviewsForUser(shipment.user_id) : Promise.resolve([]),
+      shipment.assigned_transporteur_id
+        ? getReviewsForUser(shipment.assigned_transporteur_id)
+        : Promise.resolve([]),
+      userHasReviewedShipment(id, user.id),
+    ]);
 
   const profileIds = new Set<string>();
   offers.forEach((o) => profileIds.add(o.transporteur_id));
-  reviews.forEach((r) => { profileIds.add(r.from_user_id); profileIds.add(r.to_user_id); });
+  for (const r of reviewsAboutOwner) {
+    profileIds.add(r.from_user_id);
+    profileIds.add(r.to_user_id);
+  }
+  for (const r of reviewsAboutTransporteur) {
+    profileIds.add(r.from_user_id);
+    profileIds.add(r.to_user_id);
+  }
   if (shipment.user_id) profileIds.add(shipment.user_id);
   if (shipment.assigned_transporteur_id) profileIds.add(shipment.assigned_transporteur_id);
 
@@ -91,8 +111,17 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
       )}`
     : null;
 
-  const hasReviewed = reviews.some((r) => r.from_user_id === user.id);
   const isAssigned = shipment.status === "assigned" || shipment.status === "completed";
+
+  const showOwnerReviewBlock =
+    Boolean(shipment.user_id) &&
+    !(shipment.user_id === shipment.assigned_transporteur_id);
+  const showTransporteurReviewBlock =
+    Boolean(shipment.assigned_transporteur_id) &&
+    shipment.assigned_transporteur_id !== shipment.user_id;
+  const showSinglePartyReviews =
+    Boolean(shipment.user_id) &&
+    shipment.user_id === shipment.assigned_transporteur_id;
 
   let reviewTarget: { id: string; name: string } | null = null;
   if (isAssigned && !hasReviewed) {
@@ -298,14 +327,13 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
         />
       </div>
 
-      {/* Reviews Section */}
+      {/* Reviews Section — mêmes listes que sur le profil (pas seulement cet envoi) */}
       <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="mb-4 text-lg font-bold text-[var(--text-primary)]">
-          {tr("heading")}
-        </h2>
+        <h2 className="text-lg font-bold text-[var(--text-primary)]">{tr("heading")}</h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">{tr("globalReviewsHint")}</p>
 
         {reviewTarget && (
-          <div className="mb-6 rounded-xl border border-dashed border-amber-300/50 bg-amber-50/50 p-4">
+          <div className="mt-6 rounded-xl border border-dashed border-amber-300/50 bg-amber-50/50 p-4">
             <ReviewForm
               shipmentId={id}
               toUserId={reviewTarget.id}
@@ -315,7 +343,63 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
           </div>
         )}
 
-        <ReviewsList reviews={reviews} profileMap={profileMap} />
+        {showSinglePartyReviews && ownerProfile ? (
+          <>
+            <h3 className="mt-6 text-base font-semibold text-[var(--text-primary)]">
+              {tr("reviewsReceivedBy", {
+                name: `${ownerProfile.first_name} ${ownerProfile.last_name}`,
+              })}
+            </h3>
+            <div className="mt-3">
+              <ReviewsList reviews={reviewsAboutOwner} profileMap={profileMap} />
+            </div>
+          </>
+        ) : (
+          <>
+            {showOwnerReviewBlock && ownerProfile ? (
+              <>
+                <h3 className="mt-6 text-base font-semibold text-[var(--text-primary)]">
+                  {tr("reviewsReceivedBy", {
+                    name: `${ownerProfile.first_name} ${ownerProfile.last_name}`,
+                  })}
+                </h3>
+                <div className="mt-3">
+                  <ReviewsList reviews={reviewsAboutOwner} profileMap={profileMap} />
+                </div>
+              </>
+            ) : null}
+            {showTransporteurReviewBlock && shipment.assigned_transporteur_id ? (
+              <>
+                <h3
+                  className={`mt-6 text-base font-semibold text-[var(--text-primary)] ${showOwnerReviewBlock ? "border-t border-[var(--border)] pt-6" : ""}`}
+                >
+                  {tr("reviewsReceivedBy", {
+                    name: (() => {
+                      const tp = profileMap[shipment.assigned_transporteur_id!];
+                      return tp
+                        ? `${tp.first_name} ${tp.last_name}`
+                        : tr("unknownUser");
+                    })(),
+                  })}
+                </h3>
+                <div className="mt-3">
+                  <ReviewsList
+                    reviews={reviewsAboutTransporteur}
+                    profileMap={profileMap}
+                  />
+                </div>
+              </>
+            ) : null}
+          </>
+        )}
+
+        {!showOwnerReviewBlock &&
+        !showTransporteurReviewBlock &&
+        !showSinglePartyReviews ? (
+          <div className="mt-6">
+            <ReviewsList reviews={[]} profileMap={profileMap} />
+          </div>
+        ) : null}
       </div>
     </div>
   );

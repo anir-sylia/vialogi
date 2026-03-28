@@ -99,18 +99,23 @@ export async function getOffersForShipment(shipmentId: string): Promise<OfferRow
   }
 }
 
-export async function getReviewsForShipment(shipmentId: string): Promise<ReviewRow[]> {
+/** True if this user already left a review tied to this shipment (UNIQUE per envoi). */
+export async function userHasReviewedShipment(
+  shipmentId: string,
+  fromUserId: string,
+): Promise<boolean> {
   try {
     const supabase = createSupabaseAnonServerClient();
     const { data, error } = await supabase
       .from("reviews")
-      .select("*")
+      .select("id")
       .eq("shipment_id", shipmentId)
-      .order("created_at", { ascending: false });
-    if (error) return [];
-    return (data ?? []) as ReviewRow[];
+      .eq("from_user_id", fromUserId)
+      .maybeSingle();
+    if (error) return false;
+    return data != null;
   } catch {
-    return [];
+    return false;
   }
 }
 
