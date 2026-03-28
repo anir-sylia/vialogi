@@ -137,6 +137,26 @@ export function PostShipmentForm({ locale, serverError }: Props) {
             />
           </div>
 
+          <div>
+            <label
+              htmlFor="parcel_description"
+              className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
+            >
+              {t("parcelDescription")}
+            </label>
+            <p className="mb-2 text-xs text-[var(--text-muted)]">
+              {t("parcelDescriptionHint")}
+            </p>
+            <textarea
+              id="parcel_description"
+              name="parcel_description"
+              rows={4}
+              maxLength={2000}
+              placeholder={t("parcelDescriptionPlaceholder")}
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] shadow-sm outline-none ring-[var(--brand)] focus:border-[var(--brand)] focus:ring-2"
+            />
+          </div>
+
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label

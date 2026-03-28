@@ -181,6 +181,13 @@ export async function submitShipment(formData: FormData) {
   const destination = String(formData.get("destination") ?? "").trim();
   const weightRaw = String(formData.get("weight_kg") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "").trim();
+  const parcelDescriptionRaw = String(
+    formData.get("parcel_description") ?? "",
+  ).trim();
+  const parcel_description =
+    parcelDescriptionRaw.length > 0
+      ? parcelDescriptionRaw.slice(0, 2000)
+      : null;
 
   if (!origin || !destination) {
     return fail(locale, "required_fields");
@@ -250,6 +257,7 @@ export async function submitShipment(formData: FormData) {
       weight_kg: weight,
       price,
       status: "open" as const,
+      ...(parcel_description ? { parcel_description } : {}),
       ...(user ? { user_id: user.id } : {}),
     };
 

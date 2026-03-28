@@ -124,6 +124,9 @@
     "pricePlaceholder": "Ex. 4500",
     "parcelPhoto": "Photo du colis (optionnel)",
     "parcelPhotoHint": "JPEG, PNG, WebP ou GIF — max. 4 Mo.",
+    "parcelDescription": "Colis et description",
+    "parcelDescriptionHint": "Décrivez le contenu, dimensions, fragilité, créneau de retrait… (optionnel, max. 2000 caractères).",
+    "parcelDescriptionPlaceholder": "Ex. : carton scellé ~8 kg, fragile, à retirer avant 18h…",
     "submit": "Publier l'envoi",
     "submitting": "Publication…",
     "mapSectionLabel": "Itinéraire",
@@ -148,6 +151,7 @@
     "heading": "Envois disponibles",
     "subheading": "Données en direct depuis Supabase. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
     "parcelPhotoAlt": "Photo du colis",
+    "parcelDescription": "Détail du colis",
     "cardRoute": "Trajet",
     "filteredBy": "Filtre : « {q} »",
     "empty": "Aucun envoi pour le moment.",
@@ -166,6 +170,7 @@
     "back": "Retour à l'accueil",
     "route": "Trajet",
     "parcelPhoto": "Photo du colis",
+    "parcelDescription": "Description du colis",
     "weight": "Poids",
     "price": "Prix",
     "publishedAt": "Date de publication",
@@ -249,7 +254,7 @@
     "uploading": "Envoi…",
     "photoError_invalid_photo": "Image invalide ou trop volumineuse (max. 4 Mo).",
     "photoError_forbidden": "Action non autorisée pour ce profil.",
-    "photoError_db": "Enregistrement impossible. Réessayez."
+    "photoError_db": "Échec d’enregistrement : exécutez le script SQL « 014_profile_photos_storage » dans Supabase (bucket + colonnes), vérifiez SUPABASE_SERVICE_ROLE_KEY sur Vercel, puis réessayez."
   },
   "chat": {
     "back": "Retour",

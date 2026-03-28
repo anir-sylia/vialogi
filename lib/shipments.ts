@@ -14,6 +14,7 @@ export type ShipmentRow = {
   removed_at: string | null;
   removal_reason: string | null;
   parcel_photo_url: string | null;
+  parcel_description: string | null;
 };
 
 export const PUBLIC_SHIPMENT_STATUSES = ["open", "assigned", "completed"] as const;
@@ -77,6 +78,8 @@ export async function listShipments(
       ...(r as ShipmentRow),
       parcel_photo_url:
         (r as { parcel_photo_url?: string | null }).parcel_photo_url ?? null,
+      parcel_description:
+        (r as { parcel_description?: string | null }).parcel_description ?? null,
     })) as ShipmentRow[];
   } catch (e) {
     console.error("listShipments:", e);
@@ -131,6 +134,7 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
       removed_at: data.removed_at ?? null,
       removal_reason: data.removal_reason ?? null,
       parcel_photo_url: data.parcel_photo_url ?? null,
+      parcel_description: data.parcel_description ?? null,
     } as ShipmentRow;
   } catch {
     return null;

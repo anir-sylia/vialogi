@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import { hasLocale } from "next-intl";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { createSupabaseServerClient } from "@/utils/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceRoleClientIfConfigured,
+} from "@/utils/supabase/server";
 
 const BUCKET = "profile-photos";
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -77,26 +80,30 @@ export async function uploadProfilePhoto(formData: FormData) {
   const path = `${user.id}/${kind}-${randomUUID()}.${ext}`;
   const bytes = await file.arrayBuffer();
 
-  const { error: upErr } = await supabase.storage
+  const svc = createSupabaseServiceRoleClientIfConfigured();
+  const storageClient = svc ?? supabase;
+  const dbClient = svc ?? supabase;
+
+  const { error: upErr } = await storageClient.storage
     .from(BUCKET)
     .upload(path, bytes, { contentType: file.type, upsert: false });
 
   if (upErr) {
-    console.error("uploadProfilePhoto:", upErr.message);
+    console.error("uploadProfilePhoto storage:", upErr.message, upErr);
     return fail(locale, profileUserId, "db");
   }
 
-  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  const { data: pub } = storageClient.storage.from(BUCKET).getPublicUrl(path);
   const publicUrl = pub.publicUrl;
 
   const column = kind === "avatar" ? "avatar_url" : "transport_photo_url";
-  const { error: updErr } = await supabase
+  const { error: updErr } = await dbClient
     .from("profiles")
     .update({ [column]: publicUrl })
     .eq("id", user.id);
 
   if (updErr) {
-    console.error("profile photo update:", updErr.message);
+    console.error("profile photo update:", updErr.message, updErr.code, updErr.details);
     return fail(locale, profileUserId, "db");
   }
 

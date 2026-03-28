@@ -124,6 +124,9 @@
     "pricePlaceholder": "مثال: 4500",
     "parcelPhoto": "صورة الطرد (اختياري)",
     "parcelPhotoHint": "JPEG أو PNG أو WebP أو GIF — بحد أقصى 4 م.ب.",
+    "parcelDescription": "الطرد والوصف",
+    "parcelDescriptionHint": "صف المحتوى، الأبعاد، الهشاشة، وقت الاستلام… (اختياري، 2000 حرفًا كحد أقصى).",
+    "parcelDescriptionPlaceholder": "مثال: كرتون مغلق ~8 كغ، هش، الاستلام قبل 18…",
     "submit": "نشر الشحنة",
     "submitting": "جاري النشر…",
     "mapSectionLabel": "المسار",
@@ -148,6 +151,7 @@
     "heading": "الشحنات المتاحة",
     "subheading": "بيانات مباشرة من Supabase. بدون بحث: آخر 20 شحنة. مع مدينة: حتى 50 إعلانًا يطابق مدينة الانطلاق فقط.",
     "parcelPhotoAlt": "صورة الطرد",
+    "parcelDescription": "تفاصيل الطرد",
     "cardRoute": "المسار",
     "filteredBy": "تصفية: « {q} »",
     "empty": "لا توجد شحنات حاليًا.",
@@ -166,6 +170,7 @@
     "back": "العودة إلى الرئيسية",
     "route": "المسار",
     "parcelPhoto": "صورة الطرد",
+    "parcelDescription": "وصف الطرد",
     "weight": "الوزن",
     "price": "السعر",
     "publishedAt": "تاريخ النشر",
@@ -249,7 +254,7 @@
     "uploading": "جاري الإرسال…",
     "photoError_invalid_photo": "صورة غير صالحة أو كبيرة جدًا (حد أقصى 4 م.ب).",
     "photoError_forbidden": "غير مسموح بهذا الإجراء لهذا الملف.",
-    "photoError_db": "تعذر الحفظ. أعد المحاولة."
+    "photoError_db": "فشل الحفظ: نفّذ سكربت SQL « 014_profile_photos_storage » في Supabase، تحقق من SUPABASE_SERVICE_ROLE_KEY على Vercel، ثم أعد المحاولة."
   },
   "chat": {
     "back": "رجوع",

@@ -98,6 +98,14 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
                         </span>
                       )}
                     </div>
+                    {s.parcel_description?.trim() ? (
+                      <p className="line-clamp-3 text-sm text-[var(--text-primary)]">
+                        <span className="font-medium text-[var(--text-muted)]">
+                          {t("parcelDescription")}:{" "}
+                        </span>
+                        {s.parcel_description.trim()}
+                      </p>
+                    ) : null}
                     <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border)] pt-3 text-sm text-[var(--text-muted)]">
                       <span>
                         {t("weight")}:{" "}

@@ -214,6 +214,17 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
           </span>
         </div>
 
+        {shipment.parcel_description?.trim() ? (
+          <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/60 px-4 py-3">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("parcelDescription")}
+            </span>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--text-primary)]">
+              {shipment.parcel_description.trim()}
+            </p>
+          </div>
+        ) : null}
+
         <div className="grid gap-4 border-t border-[var(--border)] pt-6 sm:grid-cols-2">
           <div>
             <span className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
