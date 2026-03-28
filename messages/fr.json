@@ -83,6 +83,7 @@
     "stopPlaceholder": "Ville de l'étape {n}",
     "removeStopAria": "Supprimer cette étape",
     "searchSubmit": "Rechercher",
+    "placesHint": "Saisissez au moins 2 lettres — suggestions au Maroc (OpenStreetMap).",
     "resultsHeading": "Colis disponibles",
     "dummyNote": "Exemples — les résultats réels seront bientôt liés à votre recherche.",
     "dummy1Title": "Petite armoire pour enfant",

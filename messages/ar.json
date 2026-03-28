@@ -83,6 +83,7 @@
     "stopPlaceholder": "مدينة المحطة {n}",
     "removeStopAria": "حذف هذه المحطة",
     "searchSubmit": "بحث",
+    "placesHint": "اكتب حرفين على الأقل — اقتراحات داخل المغرب (OpenStreetMap).",
     "resultsHeading": "طرود متاحة",
     "dummyNote": "أمثلة — ستُربط النتائج الفعلية بالبحث قريبًا.",
     "dummy1Title": "خزانة صغيرة لطفل",
