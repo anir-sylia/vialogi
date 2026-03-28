@@ -135,7 +135,7 @@
       "unknown_error": "حدث خطأ. حاول مرة أخرى.",
       "db": "تعذر الحفظ في قاعدة البيانات. تحقق من Supabase وصلاحيات RLS. إن استمر الأمر: نفّذ سكربت SQL 008 في Supabase، أو أضف SUPABASE_SERVICE_ROLE_KEY (مفتاح service_role) في Vercel ثم أعد النشر.",
       "profile_required": "الملف الشخصي ناقص في قاعدة البيانات. سجّل الخروج ثم أنشئ حسابًا من جديد، أو تواصل مع الدعم.",
-      "rls_denied": "Supabase يرفض الحفظ (RLS). نفّذ في SQL Editor السكربت supabase/migrations/010_shipments_rls_insert_security_definer.sql (يصلح الإدراج وصلاحية المشرف). يمكن استخدام 008 كبديل أبسط.",
+      "rls_denied": "Supabase يرفض الحفظ (RLS). في SQL Editor: 1) نفّذ 010_shipments_rls_insert_security_definer.sql؛ 2) إن استمر، نفّذ 011_shipments_insert_authenticated_open.sql. تأكد من وجود صف في public.profiles لنفس معرف المستخدم (Auth → Users).",
       "missing_secret": "للنشر دون إصلاح RLS بالكامل: أضف في Vercel (Production) المتغير SUPABASE_SERVICE_ROLE_KEY بقيمة مفتاح service_role من Supabase (Settings → API). أعد نشر الموقع. لا تشارك هذا المفتاح.",
       "bad_service_key": "مفتاح SUPABASE_SERVICE_ROLE_KEY في Vercel لا يطابق هذا المشروع في Supabase (أو غير كامل). استبدله بمفتاح service_role الصحيح لنفس المشروع كالرابط، احفظ ثم أعد النشر.",
       "env": "متغيرات Supabase ناقصة: عرّف NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY في Vercel (الإعدادات → Environment Variables) أو في .env.local ثم أعد النشر."
