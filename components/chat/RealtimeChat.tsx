@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { markChatRead } from "@/lib/actions/chat-read";
 
 export type ChatMsg = {
   id: string;
@@ -62,6 +63,22 @@ export function RealtimeChat({
   }, [profileMap]);
 
   useEffect(() => {
+    void (async () => {
+      const r = await markChatRead(shipmentId);
+      if (r.ok && typeof window !== "undefined") {
+        window.dispatchEvent(new Event("vialogi:chat-read"));
+      }
+    })();
+  }, [shipmentId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      void Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -116,6 +133,29 @@ export function RealtimeChat({
           };
 
           setMessages((prev) => appendDeduped(prev, msg));
+
+          void markChatRead(shipmentId).then((r) => {
+            if (r.ok && typeof window !== "undefined") {
+              window.dispatchEvent(new Event("vialogi:chat-read"));
+            }
+          });
+
+          if (
+            row.sender_id !== currentUserId &&
+            typeof document !== "undefined" &&
+            document.visibilityState === "hidden" &&
+            "Notification" in window &&
+            Notification.permission === "granted"
+          ) {
+            try {
+              new Notification(t("notificationTitle"), {
+                body: `${msg.senderName}: ${row.content.slice(0, 120)}${row.content.length > 120 ? "…" : ""}`,
+                tag: `msg-${row.id}`,
+              });
+            } catch {
+              /* ignore */
+            }
+          }
         },
       )
       .subscribe((status, err) => {
@@ -127,7 +167,8 @@ export function RealtimeChat({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [shipmentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
+  }, [shipmentId, currentUserId]);
 
   async function sendMessage() {
     const text = draft.trim();
@@ -166,6 +207,12 @@ export function RealtimeChat({
     };
 
     setMessages((prev) => appendDeduped(prev, msg));
+
+    void markChatRead(shipmentId).then((r) => {
+      if (r.ok && typeof window !== "undefined") {
+        window.dispatchEvent(new Event("vialogi:chat-read"));
+      }
+    });
   }
 
   const isMine = (msg: ChatMsg) => msg.senderId === currentUserId;

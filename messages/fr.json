@@ -11,7 +11,11 @@
     "signUp": "Inscription",
     "logout": "Déconnexion",
     "postAnnouncement": "Publier une annonce",
-    "adminUsers": "Utilisateurs"
+    "adminUsers": "Utilisateurs",
+    "messagesInbox": "Messages — voir les annonces",
+    "unreadBadge": "{count} message(s) non lu(s)",
+    "notificationNewMessage": "Vialogi",
+    "notificationNewMessageBody": "Vous avez un nouveau message. Ouvrez l’annonce concernée."
   },
   "adminUsers": {
     "title": "Clients et transporteurs",
@@ -267,6 +271,7 @@
     "messagesLabel": "Messages",
     "demoNotice": "Messages en temps réel via Supabase.",
     "noMessages": "Aucun message pour le moment. Envoyez le premier !",
+    "notificationTitle": "Nouveau message",
     "sendFailed": "Envoi impossible. Vérifiez la connexion et que le script SQL 016 (chat) est exécuté sur Supabase.",
     "inputPlaceholder": "Écrire un message…",
     "send": "Envoyer",

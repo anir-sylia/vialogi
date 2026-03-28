@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { signOut } from "@/lib/actions/auth";
 import { isPostingEnabled } from "@/lib/posting";
+import { ChatUnreadBadge } from "@/components/ChatUnreadBadge";
 
 type UserInfo = {
   id: string;
@@ -139,6 +140,10 @@ export function Navbar() {
                 {t("signUp")}
               </Link>
             </>
+          ) : null}
+
+          {!loading && user && (user.role === "client" || user.role === "transporteur") ? (
+            <ChatUnreadBadge />
           ) : null}
 
           {!loading && user ? (

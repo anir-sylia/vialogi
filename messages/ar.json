@@ -11,7 +11,11 @@
     "signUp": "إنشاء حساب",
     "logout": "تسجيل الخروج",
     "postAnnouncement": "نشر إعلان",
-    "adminUsers": "المستخدمون"
+    "adminUsers": "المستخدمون",
+    "messagesInbox": "الرسائل — الإعلانات",
+    "unreadBadge": "{count} رسالة غير مقروءة",
+    "notificationNewMessage": "فيالوجي",
+    "notificationNewMessageBody": "لديك رسالة جديدة. افتح الإعلان المعني."
   },
   "adminUsers": {
     "title": "العملاء والناقلون",
@@ -267,6 +271,7 @@
     "messagesLabel": "الرسائل",
     "demoNotice": "رسائل فورية عبر Supabase.",
     "noMessages": "لا توجد رسائل بعد. أرسل الرسالة الأولى!",
+    "notificationTitle": "رسالة جديدة",
     "sendFailed": "تعذر الإرسال. تحقق من الاتصال ومن تنفيذ سكربت SQL 016 (الدردشة) في Supabase.",
     "inputPlaceholder": "اكتب رسالة…",
     "send": "إرسال",
