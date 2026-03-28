@@ -115,6 +115,21 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   const successMsg = typeof sp.success === "string" ? sp.success : null;
   const errorMsg = typeof sp.error === "string" ? sp.error : null;
 
+  const successBanner =
+    successMsg === "review_sent"
+      ? tr("success_review_sent")
+      : successMsg
+        ? to(`success_${successMsg}` as Parameters<typeof to>[0])
+        : null;
+
+  const reviewErrorCodes = new Set(["invalid_review", "already_reviewed", "review_failed"]);
+  const errorBanner =
+    errorMsg && reviewErrorCodes.has(errorMsg)
+      ? tr(`error_${errorMsg}` as Parameters<typeof tr>[0])
+      : errorMsg
+        ? to(`error_${errorMsg}` as Parameters<typeof to>[0])
+        : null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
@@ -124,16 +139,16 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
         {t("back")}
       </Link>
 
-      {successMsg && (
+      {successBanner ? (
         <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-          {to(`success_${successMsg}` as Parameters<typeof to>[0])}
+          {successBanner}
         </div>
-      )}
-      {errorMsg && (
+      ) : null}
+      {errorBanner ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-          {to(`error_${errorMsg}` as Parameters<typeof to>[0])}
+          {errorBanner}
         </div>
-      )}
+      ) : null}
 
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
         {shipment.parcel_photo_url ? (
