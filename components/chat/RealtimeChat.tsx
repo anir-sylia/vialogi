@@ -93,7 +93,8 @@ export function RealtimeChat({
   const recordChunksRef = useRef<Blob[]>([]);
   const recordStreamRef = useRef<MediaStream | null>(null);
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const broadcastChannelRef = useRef<RealtimeChannel | null>(null);
+  const signalChannelRef = useRef<RealtimeChannel | null>(null);
+  const [signalReady, setSignalReady] = useState(false);
   const typingIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const peerTypingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -113,13 +114,12 @@ export function RealtimeChat({
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, peerTyping]);
 
+  /* Canal dédié aux INSERT messages — sans config broadcast (évite les conflits Realtime). */
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
 
     const channel = supabase
-      .channel(`chat:${shipmentId}`, {
-        config: { broadcast: { ack: false } },
-      })
+      .channel(`chat-msg:${shipmentId}`)
       .on(
         "postgres_changes",
         {
@@ -176,7 +176,7 @@ export function RealtimeChat({
           void markChatRead(shipmentId).then((r) => {
             if (r.ok && typeof window !== "undefined") {
               window.dispatchEvent(new Event("vialogi:chat-read"));
-              const ch = broadcastChannelRef.current;
+              const ch = signalChannelRef.current;
               if (ch) {
                 void ch.send({
                   type: "broadcast",
@@ -218,6 +218,26 @@ export function RealtimeChat({
           }
         },
       )
+      .subscribe((status, err) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("Realtime messages channel:", status, err?.message ?? err);
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
+  }, [shipmentId, currentUserId, locale, peerUserId]);
+
+  /* Canal séparé pour broadcast (typing + accusés) — ne mélange pas avec postgres_changes. */
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+
+    const channel = supabase
+      .channel(`chat-signal:${shipmentId}`, {
+        config: { broadcast: { ack: false } },
+      })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
         const p = payload as { userId?: string; typing?: boolean };
         if (!p.userId || p.userId === currentUserId) return;
@@ -241,7 +261,8 @@ export function RealtimeChat({
       })
       .subscribe((status, err) => {
         if (status === "SUBSCRIBED") {
-          broadcastChannelRef.current = channel;
+          signalChannelRef.current = channel;
+          setSignalReady(true);
           void markChatRead(shipmentId).then((r) => {
             if (r.ok && typeof window !== "undefined") {
               window.dispatchEvent(new Event("vialogi:chat-read"));
@@ -257,20 +278,22 @@ export function RealtimeChat({
           });
         }
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.error("Realtime chat channel:", status, err?.message ?? err);
+          console.error("Realtime signal channel:", status, err?.message ?? err);
         }
       });
 
     return () => {
-      broadcastChannelRef.current = null;
+      signalChannelRef.current = null;
+      setSignalReady(false);
       if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId, locale, peerUserId]);
+  }, [shipmentId, currentUserId, peerUserId]);
 
   useEffect(() => {
-    const ch = broadcastChannelRef.current;
+    if (!signalReady) return;
+    const ch = signalChannelRef.current;
     if (!ch || isRecording) return;
     if (!draft.trim()) {
       void ch.send({
@@ -297,7 +320,7 @@ export function RealtimeChat({
     return () => {
       if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
     };
-  }, [draft, isRecording, currentUserId]);
+  }, [draft, isRecording, currentUserId, signalReady]);
 
   useEffect(() => {
     return () => {
@@ -349,7 +372,7 @@ export function RealtimeChat({
     void markChatRead(shipmentId).then((r) => {
       if (r.ok && typeof window !== "undefined") {
         window.dispatchEvent(new Event("vialogi:chat-read"));
-        const ch = broadcastChannelRef.current;
+        const ch = signalChannelRef.current;
         if (ch) {
           void ch.send({
             type: "broadcast",
@@ -557,7 +580,7 @@ export function RealtimeChat({
         </Link>
       </header>
 
-      {peerUserId && peerTyping ? (
+      {peerTyping ? (
         <div
           className="shrink-0 border-b border-slate-200/80 bg-slate-100/95 px-4 py-2 text-center text-xs font-medium text-slate-600"
           role="status"
