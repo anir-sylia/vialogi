@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { isPostingEnabled } from "@/lib/posting";
+import { TransporterHero } from "@/components/TransporterHero";
 
 type Place = {
   id: string;
@@ -150,6 +151,10 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
     scrollToLoads();
+  }
+
+  if (authChecked && profileRole === "transporteur") {
+    return <TransporterHero />;
   }
 
   return (

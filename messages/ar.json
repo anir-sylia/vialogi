@@ -18,7 +18,8 @@
     "notificationNewMessageBody": "لديك رسالة جديدة. افتح الرسائل أو الإعلان المعني.",
     "messagesPage": "رسائلي",
     "myShipments": "إعلاناتي",
-    "myShipmentsAria": "عرض إعلاناتي"
+    "myShipmentsAria": "عرض إعلاناتي",
+    "searchRoute": "طرود في مساري"
   },
   "inbox": {
     "title": "رسائلي",
@@ -61,6 +62,47 @@
     "statsB2bHint": "إعلانات الطرق واللوجستيات",
     "statsMoroccoBadge": "MA",
     "statsMoroccoHint": "بحث ومسارات المغرب"
+  },
+  "heroTransport": {
+    "badge": "للناقلين",
+    "title": "بسيط وأقل تكلفة. التوصيل الذي تحتاجه.",
+    "subtitle": "اعثر على الطرود التي تمر بمسارك، واملأ رحلاتك الفارغة، وارفع كفاءتك.",
+    "cta": "عرض الطرود على مساري"
+  },
+  "searchRoute": {
+    "metaTitle": "طرود على مسارك | فيالوجي",
+    "metaDescription": "ابحث عن شحنات بين المدن واعثر على طرود لنقلها على طريقك.",
+    "pageTitle": "نقل الطرود على مسارك",
+    "departureLabel": "مدينة الانطلاق",
+    "departurePlaceholder": "مثال: الدار البيضاء",
+    "arrivalLabel": "مدينة الوصول",
+    "arrivalPlaceholder": "مثال: مراكش",
+    "swapAria": "تبديل مدينة الانطلاق ومدينة الوصول",
+    "addStop": "+ إضافة محطة",
+    "stopLabel": "محطة {n}",
+    "stopPlaceholder": "مدينة المحطة {n}",
+    "removeStopAria": "حذف هذه المحطة",
+    "searchSubmit": "بحث",
+    "resultsHeading": "طرود متاحة",
+    "dummyNote": "أمثلة — ستُربط النتائج الفعلية بالبحث قريبًا.",
+    "dummy1Title": "خزانة صغيرة لطفل",
+    "dummy1Price": "26,50 د.م.",
+    "dummy1Origin": "الرباط",
+    "dummy1Destination": "فاس",
+    "dummy1Dates": "بين 23 مارس و6 أبريل",
+    "dummy1Size": "L",
+    "dummy2Title": "صناديق نقل (دفعة)",
+    "dummy2Price": "1 200 د.م.",
+    "dummy2Origin": "الدار البيضاء",
+    "dummy2Destination": "مراكش",
+    "dummy2Dates": "بين 28 مارس و2 أبريل",
+    "dummy2Size": "XL",
+    "dummy3Title": "دراجة ومعدات",
+    "dummy3Price": "280 د.م.",
+    "dummy3Origin": "طنجة",
+    "dummy3Destination": "تطوان",
+    "dummy3Dates": "ابتداءً من 1 أبريل",
+    "dummy3Size": "M"
   },
   "routePlanner": {
     "title": "مسار داخل المغرب",

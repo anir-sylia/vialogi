@@ -18,7 +18,8 @@
     "notificationNewMessageBody": "Vous avez un nouveau message. Ouvrez vos messages ou l’annonce concernée.",
     "messagesPage": "Mes messages",
     "myShipments": "Mes annonces",
-    "myShipmentsAria": "Voir mes annonces"
+    "myShipmentsAria": "Voir mes annonces",
+    "searchRoute": "Colis sur mon trajet"
   },
   "inbox": {
     "title": "Mes messages",
@@ -61,6 +62,47 @@
     "statsB2bHint": "Annonces routières & logistique",
     "statsMoroccoBadge": "MA",
     "statsMoroccoHint": "Recherche & trajets Maroc"
+  },
+  "heroTransport": {
+    "badge": "Pour les transporteurs",
+    "title": "Simple et moins cher. La livraison qu'il vous faut.",
+    "subtitle": "Repérez les colis sur votre trajet, remplissez vos retours à vide et gagnez en efficacité.",
+    "cta": "Voir les colis sur mon trajet"
+  },
+  "searchRoute": {
+    "metaTitle": "Colis sur votre trajet | Vialogi",
+    "metaDescription": "Recherchez des envois entre villes et trouvez des colis à transporter sur votre route.",
+    "pageTitle": "Transporter des colis sur votre trajet",
+    "departureLabel": "Ville de départ",
+    "departurePlaceholder": "Ex. Casablanca",
+    "arrivalLabel": "Ville d'arrivée",
+    "arrivalPlaceholder": "Ex. Marrakech",
+    "swapAria": "Échanger la ville de départ et la ville d'arrivée",
+    "addStop": "+ Ajouter une étape",
+    "stopLabel": "Étape {n}",
+    "stopPlaceholder": "Ville de l'étape {n}",
+    "removeStopAria": "Supprimer cette étape",
+    "searchSubmit": "Rechercher",
+    "resultsHeading": "Colis disponibles",
+    "dummyNote": "Exemples — les résultats réels seront bientôt liés à votre recherche.",
+    "dummy1Title": "Petite armoire pour enfant",
+    "dummy1Price": "26,50 MAD",
+    "dummy1Origin": "Rabat",
+    "dummy1Destination": "Fès",
+    "dummy1Dates": "Entre le 23 mars et le 6 avril",
+    "dummy1Size": "L",
+    "dummy2Title": "Cartons déménagement (lot)",
+    "dummy2Price": "1 200 MAD",
+    "dummy2Origin": "Casablanca",
+    "dummy2Destination": "Marrakech",
+    "dummy2Dates": "Entre le 28 mars et le 2 avril",
+    "dummy2Size": "XL",
+    "dummy3Title": "Vélo et équipement",
+    "dummy3Price": "280 MAD",
+    "dummy3Origin": "Tanger",
+    "dummy3Destination": "Tétouan",
+    "dummy3Dates": "À partir du 1er avril",
+    "dummy3Size": "M"
   },
   "routePlanner": {
     "title": "Itinéraire au Maroc",

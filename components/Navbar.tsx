@@ -193,6 +193,15 @@ export function Navbar() {
             </>
           ) : null}
 
+          {!loading && user?.role === "transporteur" ? (
+            <Link
+              href="/search-route"
+              className="hidden text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--brand)] sm:inline"
+            >
+              {t("searchRoute")}
+            </Link>
+          ) : null}
+
           {!loading && user?.role === "client" ? (
             <Link
               href="/my-shipments"
@@ -347,6 +356,15 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                 >
                   {t("myShipments")}
+                </Link>
+              ) : null}
+              {user.role === "transporteur" ? (
+                <Link
+                  href="/search-route"
+                  className="text-sm font-medium text-[var(--brand)]"
+                  onClick={() => setOpen(false)}
+                >
+                  {t("searchRoute")}
                 </Link>
               ) : null}
               {user.role === "admin" ? (
