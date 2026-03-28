@@ -19,6 +19,7 @@ const errorCodes = [
   "profile_required",
   "rls_denied",
   "missing_secret",
+  "bad_service_key",
   "env",
   "unknown_error",
 ] as const;

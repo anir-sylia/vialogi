@@ -137,6 +137,7 @@
       "profile_required": "الملف الشخصي ناقص في قاعدة البيانات. سجّل الخروج ثم أنشئ حسابًا من جديد، أو تواصل مع الدعم.",
       "rls_denied": "Supabase يرفض الحفظ (RLS). نفّذ في SQL Editor السكربت supabase/migrations/008_shipments_insert_policies_reset.sql من المستودع، أو تأكد أن سياسة shipments_insert_authenticated تسمح بدورك.",
       "missing_secret": "للنشر دون إصلاح RLS بالكامل: أضف في Vercel (Production) المتغير SUPABASE_SERVICE_ROLE_KEY بقيمة مفتاح service_role من Supabase (Settings → API). أعد نشر الموقع. لا تشارك هذا المفتاح.",
+      "bad_service_key": "مفتاح SUPABASE_SERVICE_ROLE_KEY في Vercel لا يطابق هذا المشروع في Supabase (أو غير كامل). استبدله بمفتاح service_role الصحيح لنفس المشروع كالرابط، احفظ ثم أعد النشر.",
       "env": "متغيرات Supabase ناقصة: عرّف NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY في Vercel (الإعدادات → Environment Variables) أو في .env.local ثم أعد النشر."
     }
   },

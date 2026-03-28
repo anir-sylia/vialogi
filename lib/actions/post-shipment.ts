@@ -15,12 +15,16 @@ import {
 } from "@/utils/supabase/env";
 import { isPostingEnabled } from "@/lib/posting";
 
+function pgCode(err: { code?: string }): string {
+  return String(err.code ?? "");
+}
+
 function isRlsOrPermissionError(err: {
   message?: string;
   code?: string;
 }): boolean {
   const msg = (err.message ?? "").toLowerCase();
-  const code = String(err.code ?? "");
+  const code = pgCode(err);
   return (
     code === "42501" ||
     code === "PGRST301" ||
@@ -29,7 +33,21 @@ function isRlsOrPermissionError(err: {
     msg.includes("rls policy") ||
     msg.includes("permission denied") ||
     msg.includes("policy violation") ||
-    msg.includes("pgrst301")
+    msg.includes("pgrst301") ||
+    msg.includes("new row violates") ||
+    msg.includes("violates check constraint")
+  );
+}
+
+function isInvalidServiceRoleOrJwtError(err: {
+  message?: string;
+  code?: string;
+}): boolean {
+  const msg = (err.message ?? "").toLowerCase();
+  return (
+    msg.includes("invalid api key") ||
+    (msg.includes("jwt") && msg.includes("invalid")) ||
+    (msg.includes("signature") && msg.includes("invalid"))
   );
 }
 
@@ -44,7 +62,8 @@ function fail(
     | "rls_denied"
     | "missing_secret"
     | "env"
-    | "unknown_error",
+    | "unknown_error"
+    | "bad_service_key",
 ) {
   return redirect({
     href: { pathname: "/post", query: { e: code } },
@@ -175,8 +194,19 @@ export async function submitShipment(formData: FormData) {
         insertError = null;
       } else if (svc) {
         const { error: svcErr } = await svc.from("shipments").insert(row);
-        insertError = svcErr ?? null;
-        if (svcErr) {
+        if (!svcErr) {
+          insertError = null;
+        } else if (
+          isInvalidServiceRoleOrJwtError(svcErr) &&
+          !isInvalidServiceRoleOrJwtError(authInsertErr)
+        ) {
+          insertError = authInsertErr;
+          console.error(
+            "submitShipment: service_role key rejected, surfacing auth error instead",
+            svcErr.message,
+          );
+        } else {
+          insertError = svcErr;
           console.error("submitShipment: auth insert failed, service_role also failed", {
             auth: authInsertErr.message,
             service: svcErr.message,
@@ -216,8 +246,14 @@ export async function submitShipment(formData: FormData) {
     if (isRlsOrPermissionError(insertError)) {
       return fail(locale, "rls_denied");
     }
-    if (insertError.code === "23503") {
+    if (pgCode(insertError) === "23503") {
       return fail(locale, "profile_required");
+    }
+    if (pgCode(insertError) === "23502") {
+      return fail(locale, "profile_required");
+    }
+    if (authedUser && getSupabaseServiceRoleKey() && isInvalidServiceRoleOrJwtError(insertError)) {
+      return fail(locale, "bad_service_key");
     }
     if (authedUser && !getSupabaseServiceRoleKey()) {
       return fail(locale, "missing_secret");

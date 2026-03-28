@@ -137,6 +137,7 @@
       "profile_required": "Votre profil est incomplet côté base de données. Déconnectez-vous puis inscrivez-vous à nouveau, ou contactez le support.",
       "rls_denied": "Supabase refuse l'enregistrement (RLS). Exécutez dans SQL Editor le script supabase/migrations/008_shipments_insert_policies_reset.sql du dépôt, ou vérifiez que la politique shipments_insert_authenticated autorise votre rôle (client / transporteur / admin).",
       "missing_secret": "Pour publier sans corriger tout le RLS, ajoutez sur Vercel (Production) la variable SUPABASE_SERVICE_ROLE_KEY avec la clé « service_role » (Settings → API dans Supabase). Redéployez le site. Ne partagez jamais cette clé.",
+      "bad_service_key": "La clé SUPABASE_SERVICE_ROLE_KEY sur Vercel ne correspond pas à ce projet Supabase (ou est tronquée). Remplacez-la par la clé « service_role » exacte du même projet que l’URL, enregistrez, puis redéployez.",
       "env": "Variables Supabase absentes : définissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY dans Vercel (Settings → Environment Variables) ou dans .env.local, puis redéployez."
     }
   },
