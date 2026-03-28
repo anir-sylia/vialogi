@@ -1,10 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { redirect } from "@/i18n/navigation";
 import { RealtimeChat } from "@/components/chat/RealtimeChat";
 import { getShipmentById } from "@/lib/shipments";
-import { getProfile, type Profile } from "@/lib/auth";
+import { getProfile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 
 type Props = {
@@ -69,7 +68,6 @@ export default async function ChatPage({ params }: Props) {
     };
   }
 
-  const t = await getTranslations("chat");
   const routeTitle = `${shipment.origin} → ${shipment.destination}`;
 
   const messages = (existingMessages ?? []).map(

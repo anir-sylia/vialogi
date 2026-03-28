@@ -21,6 +21,8 @@ function RoutingMachine({
   onDistanceRef.current = onDistanceKm;
 
   const addedRef = useRef<L.Control | null>(null);
+  const [o0, o1] = origin;
+  const [d0, d1] = destination;
 
   useEffect(() => {
     let cancelled = false;
@@ -54,8 +56,8 @@ function RoutingMachine({
 
       const control = LR.Routing.control({
         waypoints: [
-          L.latLng(origin[0], origin[1]),
-          L.latLng(destination[0], destination[1]),
+          L.latLng(o0, o1),
+          L.latLng(d0, d1),
         ],
         router: LR.Routing.osrmv1({
           serviceUrl: "https://router.project-osrm.org/route/v1",
@@ -106,7 +108,7 @@ function RoutingMachine({
       }
       onDistanceRef.current(null);
     };
-  }, [origin[0], origin[1], destination[0], destination[1], map]);
+  }, [o0, o1, d0, d1, map]);
 
   return null;
 }

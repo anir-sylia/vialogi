@@ -148,7 +148,7 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
                 role="listbox"
               >
                 {places.map((p) => (
-                  <li key={p.id} role="option">
+                  <li key={p.id} role="option" aria-selected={false}>
                     <button
                       type="button"
                       className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start text-sm transition-colors hover:bg-[var(--surface-muted)]"

@@ -18,15 +18,20 @@ export function PublishedToast() {
     if (searchParams.get("posted") !== "1") return;
 
     handled.current = true;
-    setVisible(true);
 
     const next = new URLSearchParams(searchParams.toString());
     next.delete("posted");
     const qs = next.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname);
 
+    const show = window.setTimeout(() => {
+      setVisible(true);
+    }, 0);
     const hide = window.setTimeout(() => setVisible(false), 6000);
-    return () => window.clearTimeout(hide);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
   }, [searchParams, pathname, router]);
 
   if (!visible) return null;
