@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
+import { InboxThreadRow } from "@/components/messages/InboxThreadRow";
 import { listMessageInboxThreads } from "@/lib/chat-inbox";
 import { getProfile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
@@ -37,7 +38,7 @@ export default async function MessagesPage({ params }: Props) {
     return redirect({ href: "/", locale });
   }
 
-  const threads = await listMessageInboxThreads(supabase);
+  const threads = await listMessageInboxThreads(supabase, user.id);
   const t = await getTranslations("inbox");
 
   return (
@@ -61,35 +62,7 @@ export default async function MessagesPage({ params }: Props) {
       ) : (
         <ul className="mt-8 flex flex-col gap-3">
           {threads.map((thread) => (
-            <li key={thread.shipmentId}>
-              <Link
-                href={`/chat/${thread.shipmentId}`}
-                className="block rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--brand)]/40 hover:bg-[var(--surface-muted)]"
-              >
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--text-primary)]">
-                      {thread.origin} → {thread.destination}
-                    </p>
-                    <p className="mt-1 line-clamp-2 text-sm text-[var(--text-muted)]">
-                      {thread.lastMessagePreview}
-                    </p>
-                  </div>
-                  <time
-                    className="shrink-0 text-xs text-[var(--text-muted)] sm:ml-4"
-                    dateTime={thread.lastMessageAt}
-                  >
-                    {new Date(thread.lastMessageAt).toLocaleString(locale, {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </time>
-                </div>
-                <span className="mt-3 inline-block text-sm font-medium text-[var(--brand)]">
-                  {t("openChat")} →
-                </span>
-              </Link>
-            </li>
+            <InboxThreadRow key={thread.shipmentId} thread={thread} locale={locale} />
           ))}
         </ul>
       )}

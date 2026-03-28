@@ -10,10 +10,28 @@ export type InboxThread = {
 
 /**
  * Dernière activité par annonce, selon les messages visibles pour l’utilisateur (RLS).
+ * Exclut les fils masqués tant qu’aucun message plus récent que `hidden_at`.
  */
 export async function listMessageInboxThreads(
   supabase: SupabaseClient,
+  userId: string,
 ): Promise<InboxThread[]> {
+  const hiddenAtByShipment = new Map<string, string>();
+  const { data: hiddenRows, error: hiddenErr } = await supabase
+    .from("chat_inbox_hidden")
+    .select("shipment_id, hidden_at")
+    .eq("user_id", userId);
+
+  if (hiddenErr) {
+    console.error("chat_inbox_hidden:", hiddenErr.message);
+  } else {
+    for (const h of hiddenRows ?? []) {
+      const sid = h.shipment_id as string;
+      const at = h.hidden_at as string;
+      hiddenAtByShipment.set(sid, at);
+    }
+  }
+
   const { data, error } = await supabase
     .from("messages")
     .select(
@@ -54,6 +72,15 @@ export async function listMessageInboxThreads(
 
     const s = Array.isArray(ship) ? ship[0] : ship;
     if (!s?.id) continue;
+
+    const hiddenAt = hiddenAtByShipment.get(sid);
+    const msgAt = row.created_at as string;
+    if (
+      hiddenAt &&
+      new Date(msgAt).getTime() <= new Date(hiddenAt).getTime()
+    ) {
+      continue;
+    }
 
     seen.add(sid);
     const content = (row.content as string) ?? "";

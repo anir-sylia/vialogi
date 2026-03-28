@@ -23,7 +23,10 @@
     "subtitle": "Conversations liées à vos annonces et à vos échanges.",
     "empty": "Aucune conversation pour le moment. Les messages apparaissent ici dès qu’un échange a lieu sur une annonce.",
     "openChat": "Ouvrir la conversation",
-    "backHome": "Retour à l’accueil"
+    "backHome": "Retour à l’accueil",
+    "removeConversation": "Retirer de la liste",
+    "removeConversationConfirm": "Retirer cette conversation de « Mes messages » ? Les messages ne sont pas supprimés pour l’autre personne. Elle réapparaîtra s’il y a un nouveau message.",
+    "removeConversationFailed": "Impossible de retirer la conversation. Exécutez la migration SQL 021 sur Supabase si besoin."
   },
   "adminUsers": {
     "title": "Clients et transporteurs",
