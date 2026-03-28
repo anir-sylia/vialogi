@@ -80,6 +80,8 @@ export function RealtimeChat({
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sendError, setSendError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordSec, setRecordSec] = useState(0);
   const [peerLastReadAt, setPeerLastReadAt] = useState<string | null>(
@@ -215,6 +217,22 @@ export function RealtimeChat({
             } catch {
               /* ignore */
             }
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "messages",
+          filter: `shipment_id=eq.${shipmentId}`,
+        },
+        (payload) => {
+          const oldRow = payload.old as { id?: string } | undefined;
+          const id = oldRow?.id;
+          if (id) {
+            setMessages((prev) => prev.filter((m) => m.id !== id));
           }
         },
       )
@@ -386,6 +404,21 @@ export function RealtimeChat({
       }
     });
     return true;
+  }
+
+  async function deleteMessage(msgId: string) {
+    if (!window.confirm(t("deleteConfirm"))) return;
+    setDeletingId(msgId);
+    setDeleteError(false);
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.from("messages").delete().eq("id", msgId);
+    setDeletingId(null);
+    if (error) {
+      console.error("delete message:", error.message);
+      setDeleteError(true);
+      return;
+    }
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
   }
 
   function isReadByPeer(m: ChatMsg): boolean {
@@ -608,6 +641,11 @@ export function RealtimeChat({
             {t("sendFailed")}
           </p>
         ) : null}
+        {deleteError ? (
+          <p className="mb-2 rounded-2xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
+            {t("deleteFailed")}
+          </p>
+        ) : null}
         {messages.length === 0 ? (
           <p className="py-12 text-center text-sm text-slate-500">
             {t("noMessages")}
@@ -686,15 +724,40 @@ export function RealtimeChat({
                         {formatTime(m.createdAt)}
                       </p>
                       {mine ? (
-                        <span
-                          className={`select-none text-[13px] leading-none ${
-                            isReadByPeer(m) ? "text-sky-100" : "text-blue-200/90"
-                          }`}
-                          title={isReadByPeer(m) ? t("read") : t("delivered")}
-                          aria-label={isReadByPeer(m) ? t("read") : t("delivered")}
-                        >
-                          {isReadByPeer(m) ? "✓✓" : "✓"}
-                        </span>
+                        <>
+                          <span
+                            className={`select-none text-[13px] leading-none ${
+                              isReadByPeer(m) ? "text-sky-100" : "text-blue-200/90"
+                            }`}
+                            title={isReadByPeer(m) ? t("read") : t("delivered")}
+                            aria-label={isReadByPeer(m) ? t("read") : t("delivered")}
+                          >
+                            {isReadByPeer(m) ? "✓✓" : "✓"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => void deleteMessage(m.id)}
+                            disabled={deletingId === m.id}
+                            className="rounded p-0.5 text-blue-100 transition-colors hover:bg-white/15 hover:text-white disabled:opacity-40"
+                            aria-label={t("deleteMessage")}
+                            title={t("deleteMessage")}
+                          >
+                            <svg
+                              className="h-3.5 w-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              aria-hidden
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </>
                       ) : null}
                     </div>
                   </div>

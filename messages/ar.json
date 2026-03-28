@@ -296,6 +296,9 @@
     "read": "مقروء",
     "peerTyping": "{name} يكتب",
     "counterparty": "الطرف الآخر",
+    "deleteMessage": "حذف الرسالة",
+    "deleteConfirm": "حذف هذه الرسالة؟",
+    "deleteFailed": "تعذر حذف الرسالة.",
     "mock": {
       "driverName": "الناقل",
       "eta": "~45 د",

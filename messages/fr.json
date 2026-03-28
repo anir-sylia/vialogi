@@ -296,6 +296,9 @@
     "read": "Lu",
     "peerTyping": "{name} est en train d’écrire",
     "counterparty": "Interlocuteur",
+    "deleteMessage": "Supprimer le message",
+    "deleteConfirm": "Supprimer ce message ?",
+    "deleteFailed": "Impossible de supprimer le message.",
     "mock": {
       "driverName": "Transporteur",
       "eta": "~45 min",
