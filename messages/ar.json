@@ -16,7 +16,9 @@
     "unreadBadge": "{count} رسالة غير مقروءة",
     "notificationNewMessage": "فيالوجي",
     "notificationNewMessageBody": "لديك رسالة جديدة. افتح الرسائل أو الإعلان المعني.",
-    "messagesPage": "رسائلي"
+    "messagesPage": "رسائلي",
+    "myShipments": "إعلاناتي",
+    "myShipmentsAria": "عرض إعلاناتي"
   },
   "inbox": {
     "title": "رسائلي",
@@ -179,7 +181,11 @@
     "openChat": "محادثة",
     "publishedToast": "تم نشر إعلانك بنجاح.",
     "dismissToast": "إغلاق",
-    "matchCount": "{count, plural, =0 {لا نتائج} one {# نتيجة} other {# نتائج}}"
+    "matchCount": "{count, plural, =0 {لا نتائج} one {# نتيجة} other {# نتائج}}",
+    "myHeading": "إعلاناتي",
+    "mySubheading": "شحناتك المنشورة، بما فيها المخفية من القائمة العامة.",
+    "myEmpty": "لم تنشر أي إعلان بعد.",
+    "myEmptyHint": "انشر إعلانًا من الصفحة الرئيسية ليظهر هنا."
   },
   "shipmentDetail": {
     "back": "العودة إلى الرئيسية",
@@ -196,6 +202,7 @@
     "status_open": "مفتوح",
     "status_assigned": "مُسند",
     "status_completed": "مكتمل",
+    "status_removed": "مخفية",
     "remove": "حذف الإعلان",
     "removing": "جارٍ الحذف…",
     "confirmRemove": "هل تريد حذف هذا الإعلان فعلاً؟",

@@ -1,11 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { listShipments, type ShipmentRow } from "@/lib/shipments";
+import {
+  listShipments,
+  listShipmentsForAuthenticatedOwner,
+  type ShipmentRow,
+} from "@/lib/shipments";
 import { getOfferCountsForShipments } from "@/lib/auth";
 
 type Props = {
   locale: string;
-  searchQuery: string | undefined;
+  searchQuery?: string | undefined;
+  mode?: "public" | "mine";
 };
 
 function formatDate(iso: string, locale: string) {
@@ -19,24 +24,54 @@ function formatDate(iso: string, locale: string) {
   }
 }
 
-export async function ShipmentsSection({ locale, searchQuery }: Props) {
+function statusLabelKey(
+  status: ShipmentRow["status"],
+):
+  | "status_open"
+  | "status_assigned"
+  | "status_completed"
+  | "status_removed" {
+  switch (status) {
+    case "assigned":
+      return "status_assigned";
+    case "completed":
+      return "status_completed";
+    case "removed":
+      return "status_removed";
+    default:
+      return "status_open";
+  }
+}
+
+export async function ShipmentsSection({
+  locale,
+  searchQuery,
+  mode = "public",
+}: Props) {
   const t = await getTranslations("shipments");
-  const shipments = await listShipments(searchQuery);
+  const tDetail = await getTranslations("shipmentDetail");
+  const shipments =
+    mode === "mine"
+      ? await listShipmentsForAuthenticatedOwner()
+      : await listShipments(searchQuery);
   const offerCounts = await getOfferCountsForShipments(shipments.map((s) => s.id));
+
+  const heading = mode === "mine" ? t("myHeading") : t("heading");
+  const subheading = mode === "mine" ? t("mySubheading") : t("subheading");
 
   return (
     <section
-      id="loads"
+      id={mode === "mine" ? "my-shipments" : "loads"}
       className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-24 sm:px-6 lg:px-8"
     >
       <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
-            {t("heading")}
+            {heading}
           </h2>
-          <p className="mt-1 text-[var(--text-muted)]">{t("subheading")}</p>
+          <p className="mt-1 text-[var(--text-muted)]">{subheading}</p>
         </div>
-        {searchQuery?.trim() ? (
+        {mode === "public" && searchQuery?.trim() ? (
           <div className="text-end text-sm">
             <p className="font-medium text-[var(--brand)]">
               {t("filteredBy", { q: searchQuery.trim() })}
@@ -51,9 +86,15 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
       {shipments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--border)] bg-white/60 px-6 py-16 text-center">
           <p className="text-lg font-medium text-[var(--text-primary)]">
-            {searchQuery?.trim() ? t("emptyFiltered") : t("empty")}
+            {mode === "mine"
+              ? t("myEmpty")
+              : searchQuery?.trim()
+                ? t("emptyFiltered")
+                : t("empty")}
           </p>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">{t("emptyHint")}</p>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            {mode === "mine" ? t("myEmptyHint") : t("emptyHint")}
+          </p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -77,6 +118,11 @@ export async function ShipmentsSection({ locale, searchQuery }: Props) {
                   <div className="min-w-0 flex-1 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">
+                        {mode === "mine" ? (
+                          <span className="mb-0.5 w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            {tDetail(statusLabelKey(s.status))}
+                          </span>
+                        ) : null}
                         <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                           {t("cardRoute")}
                         </span>

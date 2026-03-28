@@ -1,4 +1,7 @@
-import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
+import {
+  createSupabaseAnonServerClient,
+  createSupabaseServerClient,
+} from "@/utils/supabase/server";
 
 export type ShipmentRow = {
   id: string;
@@ -107,6 +110,26 @@ export async function countShipments(): Promise<number> {
   }
 }
 
+function mapShipmentRow(data: Record<string, unknown>): ShipmentRow {
+  return {
+    id: String(data.id),
+    created_at: String(data.created_at),
+    origin: String(data.origin),
+    destination: String(data.destination),
+    weight_kg: Number(data.weight_kg),
+    price: Number(data.price),
+    user_id: (data.user_id as string | null) ?? null,
+    status: (data.status as ShipmentRow["status"]) ?? "open",
+    assigned_transporteur_id:
+      (data.assigned_transporteur_id as string | null) ?? null,
+    removed_by: (data.removed_by as string | null) ?? null,
+    removed_at: (data.removed_at as string | null) ?? null,
+    removal_reason: (data.removal_reason as string | null) ?? null,
+    parcel_photo_url: (data.parcel_photo_url as string | null) ?? null,
+    parcel_description: (data.parcel_description as string | null) ?? null,
+  };
+}
+
 export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
   try {
     const supabase = createSupabaseAnonServerClient();
@@ -120,23 +143,74 @@ export async function getShipmentById(id: string): Promise<ShipmentRow | null> {
 
     if (error || !data) return null;
 
-    return {
-      id: data.id,
-      created_at: data.created_at,
-      origin: data.origin,
-      destination: data.destination,
-      weight_kg: data.weight_kg,
-      price: data.price,
-      user_id: data.user_id ?? null,
-      status: data.status ?? "open",
-      assigned_transporteur_id: data.assigned_transporteur_id ?? null,
-      removed_by: data.removed_by ?? null,
-      removed_at: data.removed_at ?? null,
-      removal_reason: data.removal_reason ?? null,
-      parcel_photo_url: data.parcel_photo_url ?? null,
-      parcel_description: data.parcel_description ?? null,
-    } as ShipmentRow;
+    return mapShipmentRow(data as Record<string, unknown>);
   } catch {
     return null;
+  }
+}
+
+/** Détail : annonces publiques, ou « retirées » si le visiteur est le propriétaire. */
+export async function getShipmentForViewer(
+  id: string,
+  viewerUserId: string | null,
+): Promise<ShipmentRow | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("shipments")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const row = mapShipmentRow(data as Record<string, unknown>);
+    if (isPublicShipmentStatus(row.status)) return row;
+    if (viewerUserId && row.user_id === viewerUserId) return row;
+    if (
+      viewerUserId &&
+      row.assigned_transporteur_id === viewerUserId
+    ) {
+      return row;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Toutes les annonces du compte connecté (y compris retirées). */
+export async function listShipmentsForAuthenticatedOwner(): Promise<
+  ShipmentRow[]
+> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from("shipments")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error(
+        "listShipmentsForAuthenticatedOwner:",
+        error.message,
+        error.code,
+      );
+      return [];
+    }
+
+    return (data ?? []).map((r) =>
+      mapShipmentRow(r as Record<string, unknown>),
+    );
+  } catch (e) {
+    console.error("listShipmentsForAuthenticatedOwner:", e);
+    return [];
   }
 }

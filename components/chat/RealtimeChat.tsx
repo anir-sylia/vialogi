@@ -91,6 +91,9 @@ export function RealtimeChat({
     initialPeerLastReadAt,
   );
   const [peerTyping, setPeerTyping] = useState(false);
+  const [peerTypingName, setPeerTypingName] = useState<string | null>(null);
+  const typingShortName =
+    currentUserName.trim().split(/\s+/)[0] ?? currentUserName.trim();
   const scrollRef = useRef<HTMLDivElement>(null);
   const profilesRef = useRef(profileMap);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -268,14 +271,23 @@ export function RealtimeChat({
         config: { broadcast: { ack: false } },
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
-        const p = payload as { userId?: string; typing?: boolean };
+        const p = payload as { userId?: string; typing?: boolean; name?: string };
         if (!p.userId || p.userId === currentUserId) return;
         if (peerUserId && p.userId !== peerUserId) return;
-        setPeerTyping(!!p.typing);
         if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
-        if (p.typing) {
-          peerTypingClearRef.current = setTimeout(() => setPeerTyping(false), 4000);
+        if (!p.typing) {
+          setPeerTyping(false);
+          setPeerTypingName(null);
+          return;
         }
+        setPeerTyping(true);
+        const n =
+          typeof p.name === "string" && p.name.trim() ? p.name.trim() : null;
+        setPeerTypingName(n);
+        peerTypingClearRef.current = setTimeout(() => {
+          setPeerTyping(false);
+          setPeerTypingName(null);
+        }, 5000);
       })
       .on("broadcast", { event: "read" }, ({ payload }) => {
         const p = payload as { userId?: string; lastReadAt?: string };
@@ -314,6 +326,8 @@ export function RealtimeChat({
     return () => {
       signalChannelRef.current = null;
       setSignalReady(false);
+      setPeerTyping(false);
+      setPeerTypingName(null);
       if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
       void supabase.removeChannel(channel);
     };
@@ -328,7 +342,11 @@ export function RealtimeChat({
       void ch.send({
         type: "broadcast",
         event: "typing",
-        payload: { userId: currentUserId, typing: false },
+        payload: {
+          userId: currentUserId,
+          typing: false,
+          name: typingShortName,
+        },
       });
       if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
       return;
@@ -336,20 +354,48 @@ export function RealtimeChat({
     void ch.send({
       type: "broadcast",
       event: "typing",
-      payload: { userId: currentUserId, typing: true },
+      payload: {
+        userId: currentUserId,
+        typing: true,
+        name: typingShortName,
+      },
     });
     if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
     typingIdleRef.current = setTimeout(() => {
       void ch.send({
         type: "broadcast",
         event: "typing",
-        payload: { userId: currentUserId, typing: false },
+        payload: {
+          userId: currentUserId,
+          typing: false,
+          name: typingShortName,
+        },
       });
     }, 2500);
     return () => {
       if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
     };
-  }, [draft, isRecording, currentUserId, signalReady]);
+  }, [draft, isRecording, currentUserId, signalReady, typingShortName]);
+
+  /* Rafraîchit « en train d’écrire » tant que le brouillon n’est pas vide (évite extinction à 4–5 s sans frappe). */
+  useEffect(() => {
+    if (!signalReady) return;
+    const ch = signalChannelRef.current;
+    if (!ch || isRecording) return;
+    if (!draft.trim()) return;
+    const iv = setInterval(() => {
+      void ch.send({
+        type: "broadcast",
+        event: "typing",
+        payload: {
+          userId: currentUserId,
+          typing: true,
+          name: typingShortName,
+        },
+      });
+    }, 2000);
+    return () => clearInterval(iv);
+  }, [draft, isRecording, currentUserId, signalReady, typingShortName]);
 
   useEffect(() => {
     return () => {
@@ -624,22 +670,6 @@ export function RealtimeChat({
         </Link>
       </header>
 
-      {peerTyping ? (
-        <div
-          className="shrink-0 border-b border-slate-200/80 bg-slate-100/95 px-4 py-2 text-center text-xs font-medium text-slate-600"
-          role="status"
-        >
-          <span className="inline-flex items-center gap-1">
-            {t("peerTyping", { name: peerFirstName || t("counterparty") })}
-            <span className="inline-flex translate-y-[-2px] gap-0.5">
-              <span className="animate-pulse">·</span>
-              <span className="animate-pulse [animation-delay:200ms]">·</span>
-              <span className="animate-pulse [animation-delay:400ms]">·</span>
-            </span>
-          </span>
-        </div>
-      ) : null}
-
       <div
         ref={scrollRef}
         className="min-h-0 flex-1 overflow-y-auto px-2 py-3 sm:px-4"
@@ -780,6 +810,30 @@ export function RealtimeChat({
           })}
         </div>
       </div>
+
+      {peerTyping ? (
+        <div
+          className="shrink-0 border-t border-slate-200/80 bg-white/95 px-3 py-2 backdrop-blur-sm sm:px-4"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="mx-auto flex max-w-3xl items-center gap-2.5 text-[13px] text-slate-600">
+            <span className="inline-flex h-6 items-center gap-1 px-0.5" aria-hidden>
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-duration:0.6s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:150ms] [animation-duration:0.6s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:300ms] [animation-duration:0.6s]" />
+            </span>
+            <span className="font-medium">
+              {t("peerTyping", {
+                name:
+                  peerTypingName ||
+                  peerFirstName ||
+                  t("counterparty"),
+              })}
+            </span>
+          </div>
+        </div>
+      ) : null}
 
       <div className="shrink-0 border-t border-slate-200/80 bg-[#f0f2f5] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
         {isRecording ? (

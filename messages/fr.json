@@ -16,7 +16,9 @@
     "unreadBadge": "{count} message(s) non lu(s)",
     "notificationNewMessage": "Vialogi",
     "notificationNewMessageBody": "Vous avez un nouveau message. Ouvrez vos messages ou l’annonce concernée.",
-    "messagesPage": "Mes messages"
+    "messagesPage": "Mes messages",
+    "myShipments": "Mes annonces",
+    "myShipmentsAria": "Voir mes annonces"
   },
   "inbox": {
     "title": "Mes messages",
@@ -179,7 +181,11 @@
     "openChat": "Chat",
     "publishedToast": "Votre annonce a bien été publiée.",
     "dismissToast": "Fermer",
-    "matchCount": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+    "matchCount": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+    "myHeading": "Mes annonces",
+    "mySubheading": "Vos envois publiés, y compris ceux retirés de la liste publique.",
+    "myEmpty": "Vous n’avez pas encore publié d’annonce.",
+    "myEmptyHint": "Publiez une annonce depuis l’accueil pour la voir ici."
   },
   "shipmentDetail": {
     "back": "Retour à l'accueil",
@@ -196,6 +202,7 @@
     "status_open": "Ouvert",
     "status_assigned": "Attribué",
     "status_completed": "Terminé",
+    "status_removed": "Retirée",
     "remove": "Supprimer l'annonce",
     "removing": "Suppression…",
     "confirmRemove": "Voulez-vous vraiment supprimer cette annonce ?",

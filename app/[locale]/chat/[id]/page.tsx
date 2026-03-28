@@ -2,7 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { redirect } from "@/i18n/navigation";
 import { RealtimeChat } from "@/components/chat/RealtimeChat";
-import { getShipmentById } from "@/lib/shipments";
+import { getShipmentForViewer } from "@/lib/shipments";
 import { getProfile } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 
@@ -14,11 +14,13 @@ export default async function ChatPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const shipment = await getShipmentById(id);
-  if (!shipment) notFound();
-
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const shipment = await getShipmentForViewer(id, user?.id ?? null);
+  if (!shipment) notFound();
 
   if (!user) {
     return redirect({

@@ -154,6 +154,30 @@ export function Navbar() {
             </>
           ) : null}
 
+          {!loading && user?.role === "client" ? (
+            <Link
+              href="/my-shipments"
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-white text-[var(--text-muted)] transition-colors hover:border-[var(--brand)] hover:text-[var(--brand)] sm:inline-flex"
+              title={t("myShipments")}
+              aria-label={t("myShipmentsAria")}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                />
+              </svg>
+            </Link>
+          ) : null}
+
           {!loading && user ? (
             <div className="hidden items-center gap-2 lg:flex">
               {user.role === "admin" ? (
@@ -276,6 +300,15 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                 >
                   {t("messagesPage")}
+                </Link>
+              ) : null}
+              {user.role === "client" ? (
+                <Link
+                  href="/my-shipments"
+                  className="text-sm font-medium text-[var(--brand)]"
+                  onClick={() => setOpen(false)}
+                >
+                  {t("myShipments")}
                 </Link>
               ) : null}
               {user.role === "admin" ? (
