@@ -143,7 +143,15 @@ export function Navbar() {
           ) : null}
 
           {!loading && user && (user.role === "client" || user.role === "transporteur") ? (
-            <ChatUnreadBadge />
+            <>
+              <Link
+                href="/messages"
+                className="hidden text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--brand)] sm:inline"
+              >
+                {t("messagesPage")}
+              </Link>
+              <ChatUnreadBadge />
+            </>
           ) : null}
 
           {!loading && user ? (
@@ -261,6 +269,15 @@ export function Navbar() {
 
           {!loading && user ? (
             <div className="mt-4 flex flex-col gap-3 border-t border-[var(--border)] pt-4">
+              {user.role === "client" || user.role === "transporteur" ? (
+                <Link
+                  href="/messages"
+                  className="text-sm font-medium text-[var(--brand)]"
+                  onClick={() => setOpen(false)}
+                >
+                  {t("messagesPage")}
+                </Link>
+              ) : null}
               {user.role === "admin" ? (
                 <Link
                   href="/admin/users"

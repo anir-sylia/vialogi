@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { showAppNotification } from "@/lib/show-app-notification";
 
 const POLL_MS = 20000;
 
@@ -19,6 +20,7 @@ async function fetchUnreadCount(): Promise<number> {
 
 export function ChatUnreadBadge() {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const [count, setCount] = useState(0);
   const prevRef = useRef(0);
 
@@ -40,14 +42,11 @@ export function ChatUnreadBadge() {
         document.visibilityState === "hidden"
       ) {
         if (Notification.permission === "granted") {
-          try {
-            new Notification(t("notificationNewMessage"), {
-              body: t("notificationNewMessageBody"),
-              tag: "vialogi-chat",
-            });
-          } catch {
-            /* ignore */
-          }
+          void showAppNotification({
+            title: t("notificationNewMessage"),
+            body: t("notificationNewMessageBody"),
+            url: `/${locale}/messages`,
+          });
         }
       }
     }
@@ -68,7 +67,7 @@ export function ChatUnreadBadge() {
       window.removeEventListener("vialogi:chat-read", onRead);
       document.removeEventListener("visibilitychange", onFocus);
     };
-  }, [t]);
+  }, [t, locale]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -82,7 +81,7 @@ export function ChatUnreadBadge() {
   if (count <= 0) {
     return (
       <Link
-        href="/"
+        href="/messages"
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)]"
         title={t("messagesInbox")}
         aria-label={t("messagesInbox")}
@@ -101,7 +100,7 @@ export function ChatUnreadBadge() {
 
   return (
     <Link
-      href="/"
+      href="/messages"
       className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand)]/40 bg-[var(--brand)]/10 text-[var(--brand)] transition-colors hover:bg-[var(--brand)]/15"
       title={t("unreadBadge", { count })}
       aria-label={t("unreadBadge", { count })}

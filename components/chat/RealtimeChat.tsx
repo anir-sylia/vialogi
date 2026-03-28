@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { markChatRead } from "@/lib/actions/chat-read";
+import { showAppNotification } from "@/lib/show-app-notification";
 
 export type ChatMsg = {
   id: string;
@@ -50,6 +51,7 @@ export function RealtimeChat({
   profileMap,
 }: Props) {
   const t = useTranslations("chat");
+  const locale = useLocale();
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMsg[]>(initialMessages);
   const [draft, setDraft] = useState("");
@@ -148,9 +150,13 @@ export function RealtimeChat({
             Notification.permission === "granted"
           ) {
             try {
-              new Notification(t("notificationTitle"), {
+              const path = window.location.pathname;
+              const inThisChat = path.includes(`/chat/${shipmentId}`);
+              await showAppNotification({
+                title: t("notificationTitle"),
                 body: `${msg.senderName}: ${row.content.slice(0, 120)}${row.content.length > 120 ? "…" : ""}`,
-                tag: `msg-${row.id}`,
+                url: `/${locale}/chat/${shipmentId}`,
+                focusOnly: inThisChat,
               });
             } catch {
               /* ignore */
@@ -168,7 +174,7 @@ export function RealtimeChat({
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId]);
+  }, [shipmentId, currentUserId, locale]);
 
   async function sendMessage() {
     const text = draft.trim();

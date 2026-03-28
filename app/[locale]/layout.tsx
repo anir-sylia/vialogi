@@ -5,6 +5,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Navbar } from "@/components/Navbar";
+import { NotificationServiceWorker } from "@/components/NotificationServiceWorker";
 import "../globals.css";
 
 const notoSans = Noto_Sans({
@@ -57,6 +58,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         className={`${notoSans.variable} ${notoArabic.variable} min-h-screen bg-[var(--surface)] font-sans text-[var(--text-primary)] antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
+          <NotificationServiceWorker />
           <Navbar />
           {children}
         </NextIntlClientProvider>

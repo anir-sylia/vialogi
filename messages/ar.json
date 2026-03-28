@@ -12,10 +12,18 @@
     "logout": "تسجيل الخروج",
     "postAnnouncement": "نشر إعلان",
     "adminUsers": "المستخدمون",
-    "messagesInbox": "الرسائل — الإعلانات",
+    "messagesInbox": "رسائلي",
     "unreadBadge": "{count} رسالة غير مقروءة",
     "notificationNewMessage": "فيالوجي",
-    "notificationNewMessageBody": "لديك رسالة جديدة. افتح الإعلان المعني."
+    "notificationNewMessageBody": "لديك رسالة جديدة. افتح الرسائل أو الإعلان المعني.",
+    "messagesPage": "رسائلي"
+  },
+  "inbox": {
+    "title": "رسائلي",
+    "subtitle": "محادثات مرتبطة بإعلاناتك وتبادلاتك.",
+    "empty": "لا توجد محادثات بعد. تظهر الرسائل هنا عند وجود تبادل على إعلان.",
+    "openChat": "فتح المحادثة",
+    "backHome": "العودة إلى الرئيسية"
   },
   "adminUsers": {
     "title": "العملاء والناقلون",
@@ -258,7 +266,9 @@
     "uploading": "جاري الإرسال…",
     "photoError_invalid_photo": "صورة غير صالحة أو كبيرة جدًا (حد أقصى 4 م.ب).",
     "photoError_forbidden": "غير مسموح بهذا الإجراء لهذا الملف.",
-    "photoError_db": "فشل الحفظ: نفّذ سكربت SQL « 014_profile_photos_storage » في Supabase، تحقق من SUPABASE_SERVICE_ROLE_KEY على Vercel، ثم أعد المحاولة."
+    "photoError_db": "فشل الحفظ: نفّذ سكربت SQL « 014_profile_photos_storage » في Supabase، تحقق من SUPABASE_SERVICE_ROLE_KEY على Vercel، ثم أعد المحاولة.",
+    "messagesCta": "رسائلي",
+    "messagesHint": "جميع محادثاتك في صفحة واحدة."
   },
   "chat": {
     "back": "رجوع",

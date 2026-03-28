@@ -15,7 +15,15 @@
     "messagesInbox": "Messages — voir les annonces",
     "unreadBadge": "{count} message(s) non lu(s)",
     "notificationNewMessage": "Vialogi",
-    "notificationNewMessageBody": "Vous avez un nouveau message. Ouvrez l’annonce concernée."
+    "notificationNewMessageBody": "Vous avez un nouveau message. Ouvrez vos messages ou l’annonce concernée.",
+    "messagesPage": "Mes messages"
+  },
+  "inbox": {
+    "title": "Mes messages",
+    "subtitle": "Conversations liées à vos annonces et à vos échanges.",
+    "empty": "Aucune conversation pour le moment. Les messages apparaissent ici dès qu’un échange a lieu sur une annonce.",
+    "openChat": "Ouvrir la conversation",
+    "backHome": "Retour à l’accueil"
   },
   "adminUsers": {
     "title": "Clients et transporteurs",
@@ -258,7 +266,9 @@
     "uploading": "Envoi…",
     "photoError_invalid_photo": "Image invalide ou trop volumineuse (max. 4 Mo).",
     "photoError_forbidden": "Action non autorisée pour ce profil.",
-    "photoError_db": "Échec d’enregistrement : exécutez le script SQL « 014_profile_photos_storage » dans Supabase (bucket + colonnes), vérifiez SUPABASE_SERVICE_ROLE_KEY sur Vercel, puis réessayez."
+    "photoError_db": "Échec d’enregistrement : exécutez le script SQL « 014_profile_photos_storage » dans Supabase (bucket + colonnes), vérifiez SUPABASE_SERVICE_ROLE_KEY sur Vercel, puis réessayez.",
+    "messagesCta": "Mes messages",
+    "messagesHint": "Toutes vos conversations sur une seule page."
   },
   "chat": {
     "back": "Retour",

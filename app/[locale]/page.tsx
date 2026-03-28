@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
+import { HomeHashScroll } from "@/components/HomeHashScroll";
 import { Hero } from "@/components/Hero";
 import { MoroccoRoutePlanner } from "@/components/MoroccoRoutePlanner";
 import { PublishedToast } from "@/components/PublishedToast";
@@ -23,6 +24,7 @@ export default async function HomePage({ params, searchParams }: Props) {
 
   return (
     <>
+      <HomeHashScroll />
       <Suspense fallback={null}>
         <PublishedToast />
       </Suspense>

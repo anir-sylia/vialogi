@@ -167,6 +167,19 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             isTransporteur={targetProfile.role === "transporteur"}
           />
         ) : null}
+
+        {isOwnProfile && (targetProfile.role === "client" || targetProfile.role === "transporteur") ? (
+          <div className="mt-6 rounded-xl border border-[var(--brand)]/30 bg-[var(--brand)]/5 p-4 sm:p-5">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("messagesCta")}</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{t("messagesHint")}</p>
+            <Link
+              href="/messages"
+              className="mt-3 inline-flex rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+            >
+              {t("messagesCta")} →
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
