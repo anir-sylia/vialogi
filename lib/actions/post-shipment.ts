@@ -17,7 +17,8 @@ import {
 } from "@/utils/supabase/env";
 import { isPostingEnabled } from "@/lib/posting";
 
-const MAX_PARCEL_PHOTO_BYTES = 5 * 1024 * 1024;
+/** ≤4MB: Vercel serverless request body max ~4.5MB; multipart overhead needs margin. */
+const MAX_PARCEL_PHOTO_BYTES = 4 * 1024 * 1024;
 const ALLOWED_PARCEL_PHOTO_TYPES = new Set([
   "image/jpeg",
   "image/png",
