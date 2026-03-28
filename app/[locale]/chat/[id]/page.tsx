@@ -41,12 +41,30 @@ export default async function ChatPage({ params }: Props) {
     return redirect({ href: "/", locale });
   }
 
-  const { data: existingMessages } = await supabase
+  const { data: hiddenRow, error: hiddenErr } = await supabase
+    .from("chat_inbox_hidden")
+    .select("hidden_at")
+    .eq("user_id", user.id)
+    .eq("shipment_id", id)
+    .maybeSingle();
+
+  const inboxHiddenAfter: string | null =
+    !hiddenErr && hiddenRow?.hidden_at
+      ? (hiddenRow.hidden_at as string)
+      : null;
+
+  let messagesQuery = supabase
     .from("messages")
     .select("id, sender_id, content, created_at, message_kind, media_url")
     .eq("shipment_id", id)
     .order("created_at", { ascending: true })
     .limit(200);
+
+  if (inboxHiddenAfter) {
+    messagesQuery = messagesQuery.gt("created_at", inboxHiddenAfter);
+  }
+
+  const { data: existingMessages } = await messagesQuery;
 
   const senderIds = new Set(
     (existingMessages ?? []).map((m: { sender_id: string }) => m.sender_id),
@@ -129,6 +147,7 @@ export default async function ChatPage({ params }: Props) {
       peerUserId={peerUserId}
       peerFirstName={peerFirstName}
       initialPeerLastReadAt={initialPeerLastReadAt}
+      inboxHiddenAfterIso={inboxHiddenAfter}
     />
   );
 }

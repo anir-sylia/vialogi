@@ -36,6 +36,8 @@ type Props = {
   peerUserId: string | null;
   peerFirstName: string;
   initialPeerLastReadAt: string | null;
+  /** Si l’utilisateur a retiré la conversation de « Mes messages », masquer l’historique avant cette date. */
+  inboxHiddenAfterIso?: string | null;
 };
 
 function formatTime(iso: string) {
@@ -71,6 +73,7 @@ export function RealtimeChat({
   peerUserId,
   peerFirstName,
   initialPeerLastReadAt,
+  inboxHiddenAfterIso = null,
 }: Props) {
   const t = useTranslations("chat");
   const locale = useLocale();
@@ -139,6 +142,14 @@ export function RealtimeChat({
             message_kind?: string | null;
             media_url?: string | null;
           };
+
+          if (
+            inboxHiddenAfterIso &&
+            new Date(row.created_at).getTime() <=
+              new Date(inboxHiddenAfterIso).getTime()
+          ) {
+            return;
+          }
 
           let p = profilesRef.current[row.sender_id];
           if (!p) {
@@ -246,7 +257,7 @@ export function RealtimeChat({
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId, locale, peerUserId]);
+  }, [shipmentId, currentUserId, locale, peerUserId, inboxHiddenAfterIso]);
 
   /* Canal séparé pour broadcast (typing + accusés) — ne mélange pas avec postgres_changes. */
   useEffect(() => {
@@ -647,9 +658,11 @@ export function RealtimeChat({
           </p>
         ) : null}
         {messages.length === 0 ? (
-          <p className="py-12 text-center text-sm text-slate-500">
-            {t("noMessages")}
-          </p>
+          <div className="space-y-2 py-12 text-center text-sm text-slate-500">
+            <p>
+              {inboxHiddenAfterIso ? t("inboxClearedHint") : t("noMessages")}
+            </p>
+          </div>
         ) : null}
 
         <div className="mx-auto flex max-w-3xl flex-col gap-1">

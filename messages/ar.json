@@ -284,6 +284,7 @@
     "messagesLabel": "الرسائل",
     "demoNotice": "رسائل فورية عبر Supabase.",
     "noMessages": "لا توجد رسائل بعد. أرسل الرسالة الأولى!",
+    "inboxClearedHint": "أزلتَ هذه المحادثة من قائمتك. لا يظهر لك التاريخ الأقدم؛ ستظهر الرسائل الجديدة هنا.",
     "notificationTitle": "رسالة جديدة",
     "sendFailed": "تعذر الإرسال. تحقق من الاتصال ومن تنفيذ سكربت SQL 016 (الدردشة) في Supabase.",
     "inputPlaceholder": "اكتب رسالة…",

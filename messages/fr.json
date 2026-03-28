@@ -284,6 +284,7 @@
     "messagesLabel": "Messages",
     "demoNotice": "Messages en temps réel via Supabase.",
     "noMessages": "Aucun message pour le moment. Envoyez le premier !",
+    "inboxClearedHint": "Vous avez retiré cette conversation de votre liste. L’historique plus ancien ne s’affiche plus pour vous ; les nouveaux messages apparaîtront ici.",
     "notificationTitle": "Nouveau message",
     "sendFailed": "Envoi impossible. Vérifiez la connexion et que le script SQL 016 (chat) est exécuté sur Supabase.",
     "inputPlaceholder": "Écrire un message…",
