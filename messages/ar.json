@@ -223,6 +223,7 @@
     "error_invalid_review": "يرجى اختيار تقييم (1-5).",
     "error_already_reviewed": "لقد أرسلت تقييمًا لهذه الشحنة بالفعل.",
     "error_review_failed": "تعذر حفظ التقييم. حاول مرة أخرى.",
+    "error_cannot_review_self": "لا يمكنك تقييم نفسك.",
     "success_review_sent": "تم تسجيل تقييمك."
   },
   "profile": {

@@ -104,6 +104,9 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
       if (cl) reviewTarget = { id: cl.id, name: `${cl.first_name} ${cl.last_name}` };
     }
   }
+  if (reviewTarget && reviewTarget.id === user.id) {
+    reviewTarget = null;
+  }
 
   const statusColor =
     shipment.status === "assigned"
@@ -122,7 +125,12 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
         ? to(`success_${successMsg}` as Parameters<typeof to>[0])
         : null;
 
-  const reviewErrorCodes = new Set(["invalid_review", "already_reviewed", "review_failed"]);
+  const reviewErrorCodes = new Set([
+    "invalid_review",
+    "already_reviewed",
+    "review_failed",
+    "cannot_review_self",
+  ]);
   const errorBanner =
     errorMsg && reviewErrorCodes.has(errorMsg)
       ? tr(`error_${errorMsg}` as Parameters<typeof tr>[0])

@@ -29,6 +29,13 @@ export async function submitReview(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return redirect({ href: "/login", locale });
 
+  if (toUserId === user.id) {
+    return redirect({
+      href: { pathname: `/shipment/${shipmentId}`, query: { error: "cannot_review_self" } },
+      locale,
+    });
+  }
+
   const { error } = await supabase.from("reviews").insert({
     from_user_id: user.id,
     to_user_id: toUserId,

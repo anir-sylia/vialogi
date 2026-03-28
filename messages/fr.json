@@ -223,6 +223,7 @@
     "error_invalid_review": "Veuillez sélectionner une note (1-5).",
     "error_already_reviewed": "Vous avez déjà laissé un avis pour cet envoi.",
     "error_review_failed": "Impossible d'enregistrer l'avis. Réessayez.",
+    "error_cannot_review_self": "Vous ne pouvez pas vous attribuer une note à vous-même.",
     "success_review_sent": "Votre avis a été enregistré."
   },
   "profile": {
