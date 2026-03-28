@@ -15,6 +15,24 @@ import {
 } from "@/utils/supabase/env";
 import { isPostingEnabled } from "@/lib/posting";
 
+function isRlsOrPermissionError(err: {
+  message?: string;
+  code?: string;
+}): boolean {
+  const msg = (err.message ?? "").toLowerCase();
+  const code = String(err.code ?? "");
+  return (
+    code === "42501" ||
+    code === "PGRST301" ||
+    msg.includes("row-level security") ||
+    msg.includes("violates row-level") ||
+    msg.includes("rls policy") ||
+    msg.includes("permission denied") ||
+    msg.includes("policy violation") ||
+    msg.includes("pgrst301")
+  );
+}
+
 function fail(
   locale: string,
   code:
@@ -124,7 +142,11 @@ export async function submitShipment(formData: FormData) {
   let authedUser: User | null = null;
   try {
     const authSupabase = await createSupabaseServerClient();
-    const { data: { user } } = await authSupabase.auth.getUser();
+    let { data: { user } } = await authSupabase.auth.getUser();
+    if (!user) {
+      const { data: sess } = await authSupabase.auth.getSession();
+      user = sess.session?.user ?? null;
+    }
     authedUser = user ?? null;
 
     if (user) {
@@ -143,13 +165,25 @@ export async function submitShipment(formData: FormData) {
     };
 
     if (user) {
+      // 1) Insert avec le JWT utilisateur (RLS OK si script 008 / politiques à jour).
+      // 2) Secours : service_role si la clé est configurée (ex. clé erronée avant : on tente quand même le JWT).
       const svc = createSupabaseServiceRoleClientIfConfigured();
-      if (svc) {
-        const { error } = await svc.from("shipments").insert(row);
-        if (error) insertError = error;
+      const { error: authInsertErr } = await authSupabase
+        .from("shipments")
+        .insert(row);
+      if (!authInsertErr) {
+        insertError = null;
+      } else if (svc) {
+        const { error: svcErr } = await svc.from("shipments").insert(row);
+        insertError = svcErr ?? null;
+        if (svcErr) {
+          console.error("submitShipment: auth insert failed, service_role also failed", {
+            auth: authInsertErr.message,
+            service: svcErr.message,
+          });
+        }
       } else {
-        const { error } = await authSupabase.from("shipments").insert(row);
-        if (error) insertError = error;
+        insertError = authInsertErr;
       }
     } else {
       const { error } = await createSupabaseAnonServerClient()
@@ -179,15 +213,7 @@ export async function submitShipment(formData: FormData) {
       insertError.details,
       insertError.hint,
     );
-    const msg = insertError.message?.toLowerCase() ?? "";
-    if (
-      msg.includes("row-level security") ||
-      msg.includes("violates row-level") ||
-      msg.includes("rls policy") ||
-      msg.includes("permission denied") ||
-      msg.includes("policy violation") ||
-      insertError.code === "42501"
-    ) {
+    if (isRlsOrPermissionError(insertError)) {
       return fail(locale, "rls_denied");
     }
     if (insertError.code === "23503") {
