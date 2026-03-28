@@ -53,9 +53,10 @@ export async function listShipments(
       options?.limit ??
       (hasSearch ? SEARCH_RESULTS_LIMIT : DEFAULT_HOME_LIMIT);
 
+    // `*` évite l’erreur si la colonne `parcel_photo_url` n’existe pas encore (migration non appliquée).
     let query = supabase
       .from("shipments")
-      .select("id, created_at, origin, destination, weight_kg, price, parcel_photo_url")
+      .select("*")
       .in("status", [...PUBLIC_SHIPMENT_STATUSES])
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -73,8 +74,9 @@ export async function listShipments(
     }
 
     return (data ?? []).map((r) => ({
-      ...r,
-      parcel_photo_url: r.parcel_photo_url ?? null,
+      ...(r as ShipmentRow),
+      parcel_photo_url:
+        (r as { parcel_photo_url?: string | null }).parcel_photo_url ?? null,
     })) as ShipmentRow[];
   } catch (e) {
     console.error("listShipments:", e);
