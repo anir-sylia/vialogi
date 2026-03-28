@@ -1,7 +1,7 @@
 -- ============================================================
 -- ViaLogi: Reset shipments INSERT RLS policies (production fix)
--- Run once in Supabase → SQL Editor if publish still fails with RLS.
--- Recreates authenticated (profile role) + anon fallback inserts.
+-- Si ça ne suffit pas, exécutez plutôt 010_shipments_rls_insert_security_definer.sql
+-- (fonction SECURITY DEFINER + politique UPDATE admin).
 -- ============================================================
 
 DROP POLICY IF EXISTS "shipments_insert_anon" ON public.shipments;
