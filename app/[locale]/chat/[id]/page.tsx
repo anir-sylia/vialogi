@@ -53,6 +53,9 @@ export default async function ChatPage({ params }: Props) {
   );
   senderIds.add(user.id);
   if (shipment.user_id) senderIds.add(shipment.user_id);
+  if (shipment.assigned_transporteur_id) {
+    senderIds.add(shipment.assigned_transporteur_id);
+  }
 
   const { data: profiles } = await supabase
     .from("profiles")

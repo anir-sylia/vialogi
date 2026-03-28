@@ -265,8 +265,9 @@
     "eta": "ETA",
     "statusOnline": "En ligne",
     "messagesLabel": "Messages",
-    "demoNotice": "Démo — branchez Supabase Realtime ici",
+    "demoNotice": "Messages en temps réel via Supabase.",
     "noMessages": "Aucun message pour le moment. Envoyez le premier !",
+    "sendFailed": "Envoi impossible. Vérifiez la connexion et que le script SQL 016 (chat) est exécuté sur Supabase.",
     "inputPlaceholder": "Écrire un message…",
     "send": "Envoyer",
     "mock": {

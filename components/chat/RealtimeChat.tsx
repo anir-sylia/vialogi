@@ -35,6 +35,11 @@ function formatTime(iso: string) {
   }
 }
 
+function appendDeduped(prev: ChatMsg[], msg: ChatMsg): ChatMsg[] {
+  if (prev.some((m) => m.id === msg.id)) return prev;
+  return [...prev, msg];
+}
+
 export function RealtimeChat({
   shipmentId,
   routeTitle,
@@ -48,8 +53,13 @@ export function RealtimeChat({
   const [messages, setMessages] = useState<ChatMsg[]>(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const profilesRef = useRef(profileMap);
+
+  useEffect(() => {
+    profilesRef.current = profileMap;
+  }, [profileMap]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -69,14 +79,34 @@ export function RealtimeChat({
           table: "messages",
           filter: `shipment_id=eq.${shipmentId}`,
         },
-        (payload) => {
+        async (payload) => {
           const row = payload.new as {
             id: string;
             sender_id: string;
             content: string;
             created_at: string;
           };
-          const p = profilesRef.current[row.sender_id];
+
+          let p = profilesRef.current[row.sender_id];
+          if (!p) {
+            const { data } = await supabase
+              .from("profiles")
+              .select("first_name, last_name, role")
+              .eq("id", row.sender_id)
+              .maybeSingle();
+            if (data) {
+              p = {
+                firstName: data.first_name,
+                lastName: data.last_name,
+                role: data.role,
+              };
+              profilesRef.current = {
+                ...profilesRef.current,
+                [row.sender_id]: p,
+              };
+            }
+          }
+
           const msg: ChatMsg = {
             id: row.id,
             senderId: row.sender_id,
@@ -84,13 +114,15 @@ export function RealtimeChat({
             createdAt: row.created_at,
             senderName: p ? `${p.firstName} ${p.lastName}` : "?",
           };
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === msg.id)) return prev;
-            return [...prev, msg];
-          });
+
+          setMessages((prev) => appendDeduped(prev, msg));
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("Realtime chat channel:", status, err?.message ?? err);
+        }
+      });
 
     return () => {
       void supabase.removeChannel(channel);
@@ -102,33 +134,38 @@ export function RealtimeChat({
     if (!text || sending) return;
 
     setSending(true);
+    setSendError(false);
     setDraft("");
 
-    const optimisticId = `opt-${Date.now()}`;
-    const now = new Date().toISOString();
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        senderId: currentUserId,
-        content: text,
-        createdAt: now,
-        senderName: currentUserName,
-      },
-    ]);
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      await supabase.from("messages").insert({
+    const supabase = createSupabaseBrowserClient();
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
         shipment_id: shipmentId,
         sender_id: currentUserId,
         content: text,
-      });
-    } catch (e) {
-      console.error("send message:", e);
-    }
+      })
+      .select("id, sender_id, content, created_at")
+      .single();
 
     setSending(false);
+
+    if (error || !data) {
+      console.error("send message:", error?.message ?? error);
+      setDraft(text);
+      setSendError(true);
+      return;
+    }
+
+    const msg: ChatMsg = {
+      id: data.id,
+      senderId: data.sender_id,
+      content: data.content,
+      createdAt: data.created_at,
+      senderName: currentUserName,
+    };
+
+    setMessages((prev) => appendDeduped(prev, msg));
   }
 
   const isMine = (msg: ChatMsg) => msg.senderId === currentUserId;
@@ -177,6 +214,11 @@ export function RealtimeChat({
         role="log"
         aria-label={t("messagesLabel")}
       >
+        {sendError ? (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
+            {t("sendFailed")}
+          </p>
+        ) : null}
         {messages.length === 0 ? (
           <p className="text-center text-sm text-slate-400">
             {t("noMessages")}

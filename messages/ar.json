@@ -265,8 +265,9 @@
     "eta": "الوقت المتوقع",
     "statusOnline": "متصل",
     "messagesLabel": "الرسائل",
-    "demoNotice": "تجريبي — اربط Supabase Realtime هنا",
+    "demoNotice": "رسائل فورية عبر Supabase.",
     "noMessages": "لا توجد رسائل بعد. أرسل الرسالة الأولى!",
+    "sendFailed": "تعذر الإرسال. تحقق من الاتصال ومن تنفيذ سكربت SQL 016 (الدردشة) في Supabase.",
     "inputPlaceholder": "اكتب رسالة…",
     "send": "إرسال",
     "mock": {
