@@ -77,6 +77,26 @@ export default async function ChatPage({ params }: Props) {
 
   const routeTitle = `${shipment.origin} → ${shipment.destination}`;
 
+  const peerUserId =
+    profile.id === shipment.user_id
+      ? shipment.assigned_transporteur_id
+      : shipment.user_id;
+
+  const peerRpc = await supabase.rpc("get_peer_last_read_at", {
+    p_shipment_id: id,
+  });
+
+  let initialPeerLastReadAt: string | null = null;
+  if (!peerRpc.error && peerRpc.data != null && peerRpc.data !== "") {
+    initialPeerLastReadAt =
+      typeof peerRpc.data === "string" ? peerRpc.data : String(peerRpc.data);
+  }
+
+  const peerFirstName =
+    peerUserId && profileMap[peerUserId]
+      ? profileMap[peerUserId].firstName
+      : "";
+
   const messages = (existingMessages ?? []).map(
     (m: {
       id: string;
@@ -106,6 +126,9 @@ export default async function ChatPage({ params }: Props) {
       currentUserName={`${profile.first_name} ${profile.last_name}`}
       initialMessages={messages}
       profileMap={profileMap}
+      peerUserId={peerUserId}
+      peerFirstName={peerFirstName}
+      initialPeerLastReadAt={initialPeerLastReadAt}
     />
   );
 }

@@ -292,6 +292,10 @@
     "uploading": "جاري الإرسال…",
     "notificationImage": "صورة",
     "notificationAudio": "رسالة صوتية",
+    "delivered": "تم الإرسال",
+    "read": "مقروء",
+    "peerTyping": "{name} يكتب",
+    "counterparty": "الطرف الآخر",
     "mock": {
       "driverName": "الناقل",
       "eta": "~45 د",

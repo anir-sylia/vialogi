@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -32,6 +33,9 @@ type Props = {
   currentUserName: string;
   initialMessages: ChatMsg[];
   profileMap: Record<string, ProfileInfo>;
+  peerUserId: string | null;
+  peerFirstName: string;
+  initialPeerLastReadAt: string | null;
 };
 
 function formatTime(iso: string) {
@@ -64,6 +68,9 @@ export function RealtimeChat({
   currentUserName,
   initialMessages,
   profileMap,
+  peerUserId,
+  peerFirstName,
+  initialPeerLastReadAt,
 }: Props) {
   const t = useTranslations("chat");
   const locale = useLocale();
@@ -75,6 +82,10 @@ export function RealtimeChat({
   const [sendError, setSendError] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordSec, setRecordSec] = useState(0);
+  const [peerLastReadAt, setPeerLastReadAt] = useState<string | null>(
+    initialPeerLastReadAt,
+  );
+  const [peerTyping, setPeerTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const profilesRef = useRef(profileMap);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,19 +93,13 @@ export function RealtimeChat({
   const recordChunksRef = useRef<Blob[]>([]);
   const recordStreamRef = useRef<MediaStream | null>(null);
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const broadcastChannelRef = useRef<RealtimeChannel | null>(null);
+  const typingIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerTypingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     profilesRef.current = profileMap;
   }, [profileMap]);
-
-  useEffect(() => {
-    void (async () => {
-      const r = await markChatRead(shipmentId);
-      if (r.ok && typeof window !== "undefined") {
-        window.dispatchEvent(new Event("vialogi:chat-read"));
-      }
-    })();
-  }, [shipmentId]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -106,13 +111,15 @@ export function RealtimeChat({
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+  }, [messages, peerTyping]);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
 
     const channel = supabase
-      .channel(`chat:${shipmentId}`)
+      .channel(`chat:${shipmentId}`, {
+        config: { broadcast: { ack: false } },
+      })
       .on(
         "postgres_changes",
         {
@@ -169,6 +176,17 @@ export function RealtimeChat({
           void markChatRead(shipmentId).then((r) => {
             if (r.ok && typeof window !== "undefined") {
               window.dispatchEvent(new Event("vialogi:chat-read"));
+              const ch = broadcastChannelRef.current;
+              if (ch) {
+                void ch.send({
+                  type: "broadcast",
+                  event: "read",
+                  payload: {
+                    userId: currentUserId,
+                    lastReadAt: new Date().toISOString(),
+                  },
+                });
+              }
             }
           });
 
@@ -200,17 +218,86 @@ export function RealtimeChat({
           }
         },
       )
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        const p = payload as { userId?: string; typing?: boolean };
+        if (!p.userId || p.userId === currentUserId) return;
+        if (peerUserId && p.userId !== peerUserId) return;
+        setPeerTyping(!!p.typing);
+        if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
+        if (p.typing) {
+          peerTypingClearRef.current = setTimeout(() => setPeerTyping(false), 4000);
+        }
+      })
+      .on("broadcast", { event: "read" }, ({ payload }) => {
+        const p = payload as { userId?: string; lastReadAt?: string };
+        if (!p.userId || !p.lastReadAt) return;
+        if (p.userId === currentUserId) return;
+        if (peerUserId && p.userId !== peerUserId) return;
+        setPeerLastReadAt((prev) => {
+          const next = p.lastReadAt!;
+          if (!prev) return next;
+          return new Date(next) > new Date(prev) ? next : prev;
+        });
+      })
       .subscribe((status, err) => {
+        if (status === "SUBSCRIBED") {
+          broadcastChannelRef.current = channel;
+          void markChatRead(shipmentId).then((r) => {
+            if (r.ok && typeof window !== "undefined") {
+              window.dispatchEvent(new Event("vialogi:chat-read"));
+              void channel.send({
+                type: "broadcast",
+                event: "read",
+                payload: {
+                  userId: currentUserId,
+                  lastReadAt: new Date().toISOString(),
+                },
+              });
+            }
+          });
+        }
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           console.error("Realtime chat channel:", status, err?.message ?? err);
         }
       });
 
     return () => {
+      broadcastChannelRef.current = null;
+      if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId, locale]);
+  }, [shipmentId, currentUserId, locale, peerUserId]);
+
+  useEffect(() => {
+    const ch = broadcastChannelRef.current;
+    if (!ch || isRecording) return;
+    if (!draft.trim()) {
+      void ch.send({
+        type: "broadcast",
+        event: "typing",
+        payload: { userId: currentUserId, typing: false },
+      });
+      if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
+      return;
+    }
+    void ch.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { userId: currentUserId, typing: true },
+    });
+    if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
+    typingIdleRef.current = setTimeout(() => {
+      void ch.send({
+        type: "broadcast",
+        event: "typing",
+        payload: { userId: currentUserId, typing: false },
+      });
+    }, 2500);
+    return () => {
+      if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
+    };
+  }, [draft, isRecording, currentUserId]);
 
   useEffect(() => {
     return () => {
@@ -262,9 +349,29 @@ export function RealtimeChat({
     void markChatRead(shipmentId).then((r) => {
       if (r.ok && typeof window !== "undefined") {
         window.dispatchEvent(new Event("vialogi:chat-read"));
+        const ch = broadcastChannelRef.current;
+        if (ch) {
+          void ch.send({
+            type: "broadcast",
+            event: "read",
+            payload: {
+              userId: currentUserId,
+              lastReadAt: new Date().toISOString(),
+            },
+          });
+        }
       }
     });
     return true;
+  }
+
+  function isReadByPeer(m: ChatMsg): boolean {
+    if (!peerLastReadAt) return false;
+    try {
+      return new Date(peerLastReadAt) >= new Date(m.createdAt);
+    } catch {
+      return false;
+    }
   }
 
   async function sendMessage() {
@@ -450,6 +557,22 @@ export function RealtimeChat({
         </Link>
       </header>
 
+      {peerUserId && peerTyping ? (
+        <div
+          className="shrink-0 border-b border-slate-200/80 bg-slate-100/95 px-4 py-2 text-center text-xs font-medium text-slate-600"
+          role="status"
+        >
+          <span className="inline-flex items-center gap-1">
+            {t("peerTyping", { name: peerFirstName || t("counterparty") })}
+            <span className="inline-flex translate-y-[-2px] gap-0.5">
+              <span className="animate-pulse">·</span>
+              <span className="animate-pulse [animation-delay:200ms]">·</span>
+              <span className="animate-pulse [animation-delay:400ms]">·</span>
+            </span>
+          </span>
+        </div>
+      ) : null}
+
       <div
         ref={scrollRef}
         className="min-h-0 flex-1 overflow-y-auto px-2 py-3 sm:px-4"
@@ -521,15 +644,36 @@ export function RealtimeChat({
                         preload="metadata"
                       />
                     ) : null}
-                    {m.kind === "text" ? <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{m.content}</p> : null}
+                    {m.kind === "text" ? (
+                      <p className="wrap-break-word whitespace-pre-wrap text-[15px] leading-snug">
+                        {m.content}
+                      </p>
+                    ) : null}
 
-                    <p
-                      className={`mt-1 text-[10px] font-medium ${
-                        mine ? "text-blue-100" : "text-slate-400"
+                    <div
+                      className={`mt-1 flex items-center gap-1.5 ${
+                        mine ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {formatTime(m.createdAt)}
-                    </p>
+                      <p
+                        className={`text-[10px] font-medium ${
+                          mine ? "text-blue-100" : "text-slate-400"
+                        }`}
+                      >
+                        {formatTime(m.createdAt)}
+                      </p>
+                      {mine ? (
+                        <span
+                          className={`select-none text-[13px] leading-none ${
+                            isReadByPeer(m) ? "text-sky-100" : "text-blue-200/90"
+                          }`}
+                          title={isReadByPeer(m) ? t("read") : t("delivered")}
+                          aria-label={isReadByPeer(m) ? t("read") : t("delivered")}
+                        >
+                          {isReadByPeer(m) ? "✓✓" : "✓"}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>

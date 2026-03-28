@@ -292,6 +292,10 @@
     "uploading": "Envoi en cours…",
     "notificationImage": "Photo",
     "notificationAudio": "Message vocal",
+    "delivered": "Envoyé",
+    "read": "Lu",
+    "peerTyping": "{name} est en train d’écrire",
+    "counterparty": "Interlocuteur",
     "mock": {
       "driverName": "Transporteur",
       "eta": "~45 min",
