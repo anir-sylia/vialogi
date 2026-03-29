@@ -83,7 +83,7 @@
     "stopPlaceholder": "Ville de l'étape {n}",
     "removeStopAria": "Supprimer cette étape",
     "searchSubmit": "Rechercher",
-    "placesHint": "Saisissez au moins 2 lettres — suggestions au Maroc (OpenStreetMap).",
+    "placesHint": "Saisissez au moins 2 lettres.",
     "resultsHeading": "Colis disponibles",
     "resultsIntro": "Annonces publiées par les clients — affinez avec départ et arrivée.",
     "resultsEmpty": "Aucun colis ouvert ne correspond à ces villes pour le moment. Essayez d’autres villes ou revenez plus tard.",
