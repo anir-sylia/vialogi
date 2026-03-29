@@ -128,6 +128,13 @@ export function CityAutocompleteField({
     return () => window.clearTimeout(timer);
   }, [value, fetchPlaces]);
 
+  useEffect(() => {
+    if (places.length > 0 && value.trim().length >= 2) {
+      setOpen(true);
+      queueMicrotask(() => updateMenuPosition());
+    }
+  }, [places, value, updateMenuPosition]);
+
   useLayoutEffect(() => {
     if (open && places.length > 0) {
       updateMenuPosition();
@@ -176,10 +183,13 @@ export function CityAutocompleteField({
   const mounted =
     typeof document !== "undefined" && document.body !== null;
 
+  const textDir = locale === "ar" ? "rtl" : "ltr";
+
   const listEl = showList && mounted ? (
     <ul
       ref={listRef}
       id={`${id}-listbox`}
+      dir={textDir}
       style={{
         position: "fixed",
         top: menuPos.top,
@@ -225,38 +235,43 @@ export function CityAutocompleteField({
       >
         {label}
       </label>
-      <span className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2 text-[var(--brand)]">
-        <PinIcon className="h-5 w-5" />
-      </span>
-      <input
-        id={id}
-        name={name}
-        type="text"
-        autoComplete="off"
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          onResolvedPlace?.(null);
-          setOpen(true);
-        }}
-        onFocus={() => {
-          setOpen(true);
-          queueMicrotask(() => updateMenuPosition());
-        }}
-        placeholder={placeholder}
-        className={`w-full border-0 bg-transparent py-3.5 ps-11 pe-10 text-base text-[var(--text-primary)] outline-none ring-0 placeholder:text-[var(--text-muted)] focus:ring-0 ${inputClassName}`}
-        aria-autocomplete="list"
-        aria-expanded={showList}
-        aria-controls={`${id}-listbox`}
-      />
-      {loading ? (
-        <div className="absolute end-3 top-1/2 -translate-y-1/2">
-          <span
-            className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--brand)]"
-            aria-hidden
-          />
-        </div>
-      ) : null}
+      <div
+        className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] transition-[box-shadow,border-color] focus-within:border-[var(--brand)] focus-within:shadow-[0_0_0_3px_rgba(13,148,136,0.12),0_2px_8px_rgba(15,23,42,0.08)]"
+        dir={textDir}
+      >
+        <span className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2 text-[var(--brand)]">
+          <PinIcon className="h-5 w-5" />
+        </span>
+        <input
+          id={id}
+          name={name}
+          type="text"
+          autoComplete="off"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            onResolvedPlace?.(null);
+            setOpen(true);
+          }}
+          onFocus={() => {
+            setOpen(true);
+            queueMicrotask(() => updateMenuPosition());
+          }}
+          placeholder={placeholder}
+          className={`w-full min-h-[48px] border-0 bg-transparent py-3 ps-11 pe-10 text-base text-[var(--text-primary)] outline-none ring-0 placeholder:text-[var(--text-muted)] focus:ring-0 ${inputClassName}`}
+          aria-autocomplete="list"
+          aria-expanded={showList}
+          aria-controls={`${id}-listbox`}
+        />
+        {loading ? (
+          <div className="absolute end-3 top-1/2 -translate-y-1/2">
+            <span
+              className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--brand)]"
+              aria-hidden
+            />
+          </div>
+        ) : null}
+      </div>
 
       {mounted && listEl ? createPortal(listEl, document.body) : null}
     </div>
