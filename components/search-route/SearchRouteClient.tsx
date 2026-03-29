@@ -7,16 +7,31 @@ import type { ShipmentRow } from "@/lib/shipments";
 import { CityAutocompleteField } from "./CityAutocompleteField";
 import { TransportShipmentCard } from "./TransportShipmentCard";
 
+function PostAnnouncementLink() {
+  const tNav = useTranslations("nav");
+  return (
+    <Link
+      href="/post"
+      className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]"
+    >
+      {tNav("postAnnouncement")}
+    </Link>
+  );
+}
+
 type Props = {
   shipments: ShipmentRow[];
   initialDeparture: string;
   initialArrival: string;
+  /** False for transporteur accounts — they do not publish client shipments. */
+  showPublishAnnouncement?: boolean;
 };
 
 export function SearchRouteClient({
   shipments,
   initialDeparture,
   initialArrival,
+  showPublishAnnouncement = true,
 }: Props) {
   const t = useTranslations("searchRoute");
   const tNav = useTranslations("nav");
@@ -73,12 +88,7 @@ export function SearchRouteClient({
           >
             {t("searchSubmit")}
           </button>
-          <Link
-            href="/post"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]"
-          >
-            {tNav("postAnnouncement")}
-          </Link>
+          {showPublishAnnouncement ? <PostAnnouncementLink /> : null}
         </div>
       </form>
 

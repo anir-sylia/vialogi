@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { SearchRouteClient } from "@/components/search-route/SearchRouteClient";
 import { listShipmentsForTransportSearch } from "@/lib/shipments";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -33,11 +34,29 @@ export default async function SearchRoutePage({ params, searchParams }: Props) {
 
   const shipments = await listShipmentsForTransportSearch(dep || undefined, arr || undefined);
 
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let showPublishAnnouncement = true;
+  if (user) {
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (prof?.role === "transporteur") {
+      showPublishAnnouncement = false;
+    }
+  }
+
   return (
     <SearchRouteClient
       shipments={shipments}
       initialDeparture={dep}
       initialArrival={arr}
+      showPublishAnnouncement={showPublishAnnouncement}
     />
   );
 }
