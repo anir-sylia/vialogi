@@ -35,6 +35,18 @@ export function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
+/**
+ * Photon/OSM labels look like "Rabat, Rabat-Salé-Kénitra, Maroc" but `shipments`
+ * often store only "Rabat". Use the first segment for ILIKE so both match.
+ */
+function primaryLocalityForSearch(place: string): string {
+  const t = place.trim();
+  if (!t) return "";
+  const i = t.indexOf(",");
+  if (i === -1) return t;
+  return t.slice(0, i).trim();
+}
+
 const DEFAULT_HOME_LIMIT = 20;
 const SEARCH_RESULTS_LIMIT = 50;
 
@@ -102,8 +114,8 @@ export async function listShipmentsForTransportSearch(
   try {
     const supabase = createSupabaseAnonServerClient();
     const limit = options?.limit ?? 50;
-    const o = (originSubstr ?? "").trim();
-    const d = (destinationSubstr ?? "").trim();
+    const o = primaryLocalityForSearch(originSubstr ?? "");
+    const d = primaryLocalityForSearch(destinationSubstr ?? "");
 
     let query = supabase
       .from("shipments")
