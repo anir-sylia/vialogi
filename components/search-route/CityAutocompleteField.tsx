@@ -1,7 +1,14 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 export type ResolvedPlace = {
   display: string;
@@ -51,7 +58,8 @@ type Props = {
   onResolvedPlace?: (place: ResolvedPlace | null) => void;
   placeholder: string;
   label: string;
-  /** Classes additionnelles sur le champ (coins, etc.) */
+  /** When true, show the label above the field; otherwise it is screen-reader only. */
+  labelVisible?: boolean;
   inputClassName?: string;
 };
 
@@ -63,13 +71,31 @@ export function CityAutocompleteField({
   onResolvedPlace,
   placeholder,
   label,
+  labelVisible = false,
   inputClassName = "",
 }: Props) {
   const locale = useLocale();
   const wrapRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const [open, setOpen] = useState(false);
   const [places, setPlaces] = useState<PlaceRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [menuPos, setMenuPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
+  const updateMenuPosition = useCallback(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setMenuPos({
+      top: r.bottom + 4,
+      left: r.left,
+      width: r.width,
+    });
+  }, []);
 
   const fetchPlaces = useCallback(
     async (q: string) => {
@@ -102,9 +128,33 @@ export function CityAutocompleteField({
     return () => window.clearTimeout(timer);
   }, [value, fetchPlaces]);
 
+  useLayoutEffect(() => {
+    if (open && places.length > 0) {
+      updateMenuPosition();
+    } else {
+      setMenuPos(null);
+    }
+  }, [open, places.length, updateMenuPosition, value]);
+
+  useEffect(() => {
+    if (!open || places.length === 0) return;
+    function onScrollOrResize() {
+      updateMenuPosition();
+    }
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [open, places.length, updateMenuPosition]);
+
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (wrapRef.current?.contains(t)) return;
+      if (listRef.current?.contains(t)) return;
+      setOpen(false);
     }
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
@@ -119,11 +169,60 @@ export function CityAutocompleteField({
       onResolvedPlace?.(null);
     }
     setOpen(false);
+    setMenuPos(null);
   }
+
+  const showList = open && places.length > 0 && menuPos !== null;
+  const mounted =
+    typeof document !== "undefined" && document.body !== null;
+
+  const listEl = showList && mounted ? (
+    <ul
+      ref={listRef}
+      id={`${id}-listbox`}
+      style={{
+        position: "fixed",
+        top: menuPos.top,
+        left: menuPos.left,
+        width: menuPos.width,
+        zIndex: 9999,
+        maxHeight: "min(50vh, 16rem)",
+      }}
+      className="overflow-auto rounded-xl border border-[var(--border)] bg-white py-1 shadow-xl"
+      role="listbox"
+    >
+      {places.map((p) => (
+        <li key={p.id} role="option">
+          <button
+            type="button"
+            className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start text-sm transition-colors hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)]"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              pickPlace(p);
+            }}
+          >
+            <span className="font-semibold text-[var(--text-primary)]">
+              {p.name}
+            </span>
+            <span className="text-xs text-[var(--text-muted)]">
+              {[p.state, p.country].filter(Boolean).join(" · ")}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  ) : null;
 
   return (
     <div ref={wrapRef} className="relative">
-      <label htmlFor={id} className="sr-only">
+      <label
+        htmlFor={id}
+        className={
+          labelVisible
+            ? "mb-1.5 block text-sm font-medium text-[var(--text-primary)]"
+            : "sr-only"
+        }
+      >
         {label}
       </label>
       <span className="pointer-events-none absolute start-3 top-1/2 z-10 -translate-y-1/2 text-[var(--brand)]">
@@ -140,11 +239,14 @@ export function CityAutocompleteField({
           onResolvedPlace?.(null);
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          setOpen(true);
+          queueMicrotask(() => updateMenuPosition());
+        }}
         placeholder={placeholder}
         className={`w-full border-0 bg-transparent py-3.5 ps-11 pe-10 text-base text-[var(--text-primary)] outline-none ring-0 placeholder:text-[var(--text-muted)] focus:ring-0 ${inputClassName}`}
         aria-autocomplete="list"
-        aria-expanded={open && places.length > 0}
+        aria-expanded={showList}
         aria-controls={`${id}-listbox`}
       />
       {loading ? (
@@ -156,30 +258,7 @@ export function CityAutocompleteField({
         </div>
       ) : null}
 
-      {open && places.length > 0 ? (
-        <ul
-          id={`${id}-listbox`}
-          className="absolute z-40 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-[var(--border)] bg-white py-1 shadow-lg"
-          role="listbox"
-        >
-          {places.map((p) => (
-            <li key={p.id} role="option">
-              <button
-                type="button"
-                className="flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start text-sm transition-colors hover:bg-[var(--surface-muted)]"
-                onClick={() => pickPlace(p)}
-              >
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {p.name}
-                </span>
-                <span className="text-xs text-[var(--text-muted)]">
-                  {[p.state, p.country].filter(Boolean).join(" · ")}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {mounted && listEl ? createPortal(listEl, document.body) : null}
     </div>
   );
 }

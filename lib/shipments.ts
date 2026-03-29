@@ -90,6 +90,61 @@ export async function listShipments(
   }
 }
 
+/**
+ * Liste pour la page transporteur « colis sur trajet » : annonces publiques,
+ * filtre optionnel sur ville de départ / d’arrivée (ILIKE).
+ */
+export async function listShipmentsForTransportSearch(
+  originSubstr: string | undefined | null,
+  destinationSubstr: string | undefined | null,
+  options?: { limit?: number },
+): Promise<ShipmentRow[]> {
+  try {
+    const supabase = createSupabaseAnonServerClient();
+    const limit = options?.limit ?? 50;
+    const o = (originSubstr ?? "").trim();
+    const d = (destinationSubstr ?? "").trim();
+
+    let query = supabase
+      .from("shipments")
+      .select("*")
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (o.length >= 2) {
+      query = query.ilike(
+        "origin",
+        `%${escapeIlikePattern(o)}%`,
+      );
+    }
+    if (d.length >= 2) {
+      query = query.ilike(
+        "destination",
+        `%${escapeIlikePattern(d)}%`,
+      );
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error(
+        "listShipmentsForTransportSearch:",
+        error.message,
+        error.code,
+      );
+      return [];
+    }
+
+    return (data ?? []).map((r) =>
+      mapShipmentRow(r as Record<string, unknown>),
+    );
+  } catch (e) {
+    console.error("listShipmentsForTransportSearch:", e);
+    return [];
+  }
+}
+
 /** Total rows in `shipments` (for home stats). */
 export async function countShipments(): Promise<number> {
   try {
