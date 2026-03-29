@@ -103,18 +103,25 @@ export async function ShipmentsSection({
             return (
               <li key={s.id}>
                 <article className="flex h-full flex-col rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
-                  {s.parcel_photo_url ? (
-                    <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
-                      {/* Supabase Storage URL — pas de domaine fixe pour next/image en OSS */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={s.parcel_photo_url}
-                        alt={t("parcelPhotoAlt")}
-                        className="aspect-[4/3] w-full object-cover"
-                        loading="lazy"
+                  <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
+                    {s.parcel_photo_url ? (
+                      <>
+                        {/* Supabase Storage URL — pas de domaine fixe pour next/image en OSS */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={s.parcel_photo_url}
+                          alt={t("parcelPhotoAlt")}
+                          className="aspect-[4/3] w-full object-cover"
+                          loading="lazy"
+                        />
+                      </>
+                    ) : (
+                      <div
+                        className="aspect-[4/3] w-full bg-[var(--surface-muted)]"
+                        aria-hidden
                       />
-                    </div>
-                  ) : null}
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-col gap-1">
