@@ -34,10 +34,6 @@ export type HowItWorksDict = {
     title: string;
     steps: Array<{ title: string; icon: LucideIcon }>;
   };
-  insurance: {
-    title: string;
-    description: string;
-  };
   trustBadges: {
     title: string;
     badges: Array<{ title: string; icon: LucideIcon }>;
@@ -100,11 +96,6 @@ export const HOW_IT_WORKS: Record<"fr" | "ar", HowItWorksDict> = {
         { title: "Confirmer la réception de l'article", icon: BadgeCheck },
       ],
     },
-    insurance: {
-      title: "ViaLogi et la sécurité",
-      description:
-        "ViaLogi propose une assurance pour protéger vos articles jusqu'à 50 000 MAD pendant le transport. L'assurance couvre la casse et le vol qui peuvent survenir pendant le transport.",
-    },
     trustBadges: {
       title: "Confiance et transparence",
       badges: [
@@ -156,7 +147,7 @@ export const HOW_IT_WORKS: Record<"fr" | "ar", HowItWorksDict> = {
         },
         {
           q: "Comment fonctionne l'assurance ?",
-          a: "L’assurance couvre la casse et le vol pendant le transport, selon les conditions indiquées sur la plateforme.",
+          a: "ViaLogi facilite la mise en relation et sécurise vos transactions. La garde et l'intégrité du colis relèvent de la confiance mutuelle et de la responsabilité directe entre l'expéditeur et le transporteur. C'est pourquoi nous recommandons de bien vérifier le colis ensemble au départ et à l'arrivée.",
         },
         {
           q: "Que faire si mon colis est endommagé ?",
@@ -206,11 +197,6 @@ export const HOW_IT_WORKS: Record<"fr" | "ar", HowItWorksDict> = {
         { title: "تلقي عروض", icon: MessageSquare },
         { title: "تأكيد استلام السلعة", icon: BadgeCheck },
       ],
-    },
-    insurance: {
-      title: "فيالوجي والأمان",
-      description:
-        "تقدم فيالوجي تأميناً لحماية سلعك حتى 50,000 درهم أثناء النقل. يغطي التأمين الكسر والسرقة اللذين قد يحدثان أثناء النقل.",
     },
     trustBadges: {
       title: "الثقة والشفافية",
@@ -263,7 +249,7 @@ export const HOW_IT_WORKS: Record<"fr" | "ar", HowItWorksDict> = {
         },
         {
           q: "كيف يعمل التأمين؟",
-          a: "التأمين كيغطي الكسر والسرقة أثناء النقل حسب الشروط اللي كتوضحها المنصة.",
+          a: "فيالوجي هي وسيط كيضمن ليكم التعامل الآمن وتقريب المسافات. ملي كيتسلم الناقل الطرد، كتولي الأمانة والمسؤولية عليه مباشرة حتى يوصلها لعندك. داكشي علاش كنصحوكم ديما تفحصو الطرد ديالكم بجوج في وقت التسليم وفي وقت الاستلام باش تضمنوا حقكم.",
         },
         {
           q: "ماذا أفعل إذا تضرر طردي؟",

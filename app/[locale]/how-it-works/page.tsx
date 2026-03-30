@@ -139,22 +139,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </ol>
       </section>
 
-      {/* 6) Insurance */}
-      <section className="mt-12 overflow-hidden rounded-3xl border border-[var(--border)] bg-white p-8 shadow-sm sm:p-10">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-3xl">
-            {d.insurance.title}
-          </h2>
-          <div className="rounded-full bg-[var(--brand)]/10 px-4 py-2 text-sm font-semibold text-[var(--brand)] ring-1 ring-[var(--brand)]/15">
-            50 000 MAD
-          </div>
-        </div>
-        <p className="mt-4 text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
-          {d.insurance.description}
-        </p>
-      </section>
-
-      {/* 7) Trust Badges */}
+      {/* 6) Trust Badges */}
       <section className="mt-12">
         <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
           {d.trustBadges.title}
@@ -174,7 +159,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </ul>
       </section>
 
-      {/* 8) Pro Transporter */}
+      {/* 7) Pro Transporter */}
       <section className="mt-12 overflow-hidden rounded-3xl border border-[var(--border)] bg-white p-8 shadow-sm sm:p-10">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
           <div>
@@ -206,7 +191,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </div>
       </section>
 
-      {/* 9) Testimonials */}
+      {/* 8) Testimonials */}
       <section className="mt-12">
         <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
           {d.testimonials.title}
@@ -228,7 +213,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </ul>
       </section>
 
-      {/* 10) Stats */}
+      {/* 9) Stats */}
       <section className="mt-12 overflow-hidden rounded-3xl border border-[var(--border)] bg-white p-8 shadow-sm sm:p-10">
         <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
           {d.stats.title}
@@ -251,7 +236,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </ul>
       </section>
 
-      {/* 11) FAQ */}
+      {/* 10) FAQ */}
       <section className="mt-12">
         <h2 className="text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
           {d.faq.title}
@@ -273,7 +258,7 @@ export default async function HowItWorksPage({ params }: Props) {
         </div>
       </section>
 
-      {/* 12) Footer */}
+      {/* 11) Footer */}
       <footer className="mt-12 rounded-3xl border border-[var(--border)] bg-white p-8 shadow-sm sm:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--text-muted)]">
           <div className="flex flex-wrap gap-4">
