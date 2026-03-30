@@ -66,10 +66,21 @@ export default async function ChatPage({ params }: Props) {
     messagesQuery = messagesQuery.gt("created_at", inboxHiddenAfter);
   }
 
-  const { data: existingMessages } = await messagesQuery;
+  const { data: existingMessagesRaw } = await messagesQuery;
+
+  const uid = (x: string) => x.trim().toLowerCase();
+  const ownerUid = shipment.user_id ? uid(shipment.user_id) : "";
+
+  const existingMessages =
+    isTransporteur && ownerUid
+      ? (existingMessagesRaw ?? []).filter((m: { sender_id: string }) => {
+          const s = uid(m.sender_id);
+          return s === uid(user.id) || s === ownerUid;
+        })
+      : (existingMessagesRaw ?? []);
 
   const senderIds = new Set(
-    (existingMessages ?? []).map((m: { sender_id: string }) => m.sender_id),
+    existingMessages.map((m: { sender_id: string }) => m.sender_id),
   );
   senderIds.add(user.id);
   if (shipment.user_id) senderIds.add(shipment.user_id);
@@ -150,6 +161,8 @@ export default async function ChatPage({ params }: Props) {
       peerFirstName={peerFirstName}
       initialPeerLastReadAt={initialPeerLastReadAt}
       inboxHiddenAfterIso={inboxHiddenAfter}
+      shipmentOwnerUserId={shipment.user_id ?? ""}
+      transporteurPeerOnlyMessages={isTransporteur}
     />
   );
 }

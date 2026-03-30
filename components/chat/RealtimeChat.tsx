@@ -38,6 +38,10 @@ type Props = {
   initialPeerLastReadAt: string | null;
   /** Si l’utilisateur a retiré la conversation de « Mes messages », masquer l’historique avant cette date. */
   inboxHiddenAfterIso?: string | null;
+  /** Propriétaire de l’annonce (client) — pour filtrer le flux temps réel côté transporteur. */
+  shipmentOwnerUserId?: string;
+  /** Transporteur : n’afficher que les messages du client et les siens (pas les autres transporteurs). */
+  transporteurPeerOnlyMessages?: boolean;
 };
 
 function formatTime(iso: string) {
@@ -79,6 +83,8 @@ export function RealtimeChat({
   peerFirstName,
   initialPeerLastReadAt,
   inboxHiddenAfterIso = null,
+  shipmentOwnerUserId = "",
+  transporteurPeerOnlyMessages = false,
 }: Props) {
   const t = useTranslations("chat");
   const locale = useLocale();
@@ -273,7 +279,16 @@ export function RealtimeChat({
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId, meId, locale, peerUserId, inboxHiddenAfterIso]);
+  }, [
+    shipmentId,
+    currentUserId,
+    meId,
+    locale,
+    peerUserId,
+    inboxHiddenAfterIso,
+    transporteurPeerOnlyMessages,
+    shipmentOwnerUserId,
+  ]);
 
   /* Canal séparé pour broadcast (typing + accusés) — ne mélange pas avec postgres_changes. */
   useEffect(() => {
