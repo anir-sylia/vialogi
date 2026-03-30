@@ -321,7 +321,7 @@
     "noMessages": "Aucun message pour le moment. Envoyez le premier !",
     "inboxClearedHint": "Vous avez retiré cette conversation de votre liste. L’historique plus ancien ne s’affiche plus pour vous ; les nouveaux messages apparaîtront ici.",
     "notificationTitle": "Nouveau message",
-    "sendFailed": "Envoi impossible. Vérifiez la connexion et que le script SQL 016 (chat) est exécuté sur Supabase.",
+    "sendFailed": "Envoi impossible. Vérifiez la connexion. Si le problème continue : appliquez les migrations Supabase sur la table « messages » (colonnes + RLS), ou vérifiez que vous avez le droit d’écrire sur cette annonce (ouverte, offre, ou assignation).",
     "inputPlaceholder": "Écrire un message…",
     "send": "Envoyer",
     "attachPhoto": "Envoyer une photo",

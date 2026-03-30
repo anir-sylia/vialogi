@@ -97,6 +97,7 @@ export function RealtimeChat({
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sendError, setSendError] = useState(false);
+  const [sendErrorDetail, setSendErrorDetail] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -458,8 +459,15 @@ export function RealtimeChat({
 
     if (error || !data) {
       console.error("send message:", error?.message ?? error);
+      const errText =
+        typeof error?.message === "string"
+          ? error.message.slice(0, 400)
+          : null;
+      setSendErrorDetail(errText);
       return false;
     }
+
+    setSendErrorDetail(null);
 
     const msg: ChatMsg = {
       id: data.id,
@@ -526,6 +534,7 @@ export function RealtimeChat({
 
     setSending(true);
     setSendError(false);
+    setSendErrorDetail(null);
     setDraft("");
 
     const ok = await insertMessage("text", text, null);
@@ -544,6 +553,7 @@ export function RealtimeChat({
 
     setUploading(true);
     setSendError(false);
+    setSendErrorDetail(null);
     const caption = draft.trim();
     setDraft("");
 
@@ -552,6 +562,7 @@ export function RealtimeChat({
 
     if ("error" in up) {
       setSendError(true);
+      setSendErrorDetail(up.error.slice(0, 400));
       setDraft(caption);
       return;
     }
@@ -620,11 +631,13 @@ export function RealtimeChat({
     const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
     setUploading(true);
     setSendError(false);
+    setSendErrorDetail(null);
     const up = await uploadChatMedia(shipmentId, blob, blob.type);
     setUploading(false);
 
     if ("error" in up) {
       setSendError(true);
+      setSendErrorDetail(up.error.slice(0, 400));
       return;
     }
 
@@ -711,9 +724,14 @@ export function RealtimeChat({
         dir="ltr"
       >
         {sendError ? (
-          <p className="mb-2 rounded-2xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
-            {t("sendFailed")}
-          </p>
+          <div className="mb-2 rounded-2xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
+            <p>{t("sendFailed")}</p>
+            {sendErrorDetail ? (
+              <p className="mt-2 break-words text-left text-xs font-mono text-red-800/90">
+                {sendErrorDetail}
+              </p>
+            ) : null}
+          </div>
         ) : null}
         {deleteError ? (
           <p className="mb-2 rounded-2xl bg-red-50 px-3 py-2 text-center text-sm text-red-700">
