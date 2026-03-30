@@ -63,6 +63,11 @@ function appendDeduped(prev: ChatMsg[], msg: ChatMsg): ChatMsg[] {
   return [...prev, msg];
 }
 
+/** UUID comparisons must be case-insensitive (auth vs Postgres can differ). */
+function canonUserId(id: string): string {
+  return id.trim().toLowerCase();
+}
+
 export function RealtimeChat({
   shipmentId,
   routeTitle,
@@ -78,7 +83,10 @@ export function RealtimeChat({
   const t = useTranslations("chat");
   const locale = useLocale();
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMsg[]>(initialMessages);
+  const meId = canonUserId(currentUserId);
+  const [messages, setMessages] = useState<ChatMsg[]>(() =>
+    initialMessages.map((m) => ({ ...m, senderId: canonUserId(m.senderId) })),
+  );
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -107,7 +115,11 @@ export function RealtimeChat({
   const peerTypingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    profilesRef.current = profileMap;
+    const next: Record<string, ProfileInfo> = {};
+    for (const [k, v] of Object.entries(profileMap)) {
+      next[canonUserId(k)] = v;
+    }
+    profilesRef.current = next;
   }, [profileMap]);
 
   useEffect(() => {
@@ -154,7 +166,8 @@ export function RealtimeChat({
             return;
           }
 
-          let p = profilesRef.current[row.sender_id];
+          const sid = canonUserId(row.sender_id);
+          let p = profilesRef.current[sid];
           if (!p) {
             const { data } = await supabase
               .from("profiles")
@@ -170,7 +183,7 @@ export function RealtimeChat({
               };
               profilesRef.current = {
                 ...profilesRef.current,
-                [row.sender_id]: p,
+                [sid]: p,
               };
             }
           }
@@ -179,7 +192,7 @@ export function RealtimeChat({
             (row.message_kind as ChatMsg["kind"] | undefined) ?? "text";
           const msg: ChatMsg = {
             id: row.id,
-            senderId: row.sender_id,
+            senderId: sid,
             content: row.content,
             createdAt: row.created_at,
             senderName: p ? `${p.firstName} ${p.lastName}` : "?",
@@ -207,7 +220,7 @@ export function RealtimeChat({
           });
 
           if (
-            row.sender_id !== currentUserId &&
+            sid !== meId &&
             typeof document !== "undefined" &&
             document.visibilityState === "hidden" &&
             "Notification" in window &&
@@ -260,7 +273,7 @@ export function RealtimeChat({
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reconnect only when room/user changes
-  }, [shipmentId, currentUserId, locale, peerUserId, inboxHiddenAfterIso]);
+  }, [shipmentId, currentUserId, meId, locale, peerUserId, inboxHiddenAfterIso]);
 
   /* Canal séparé pour broadcast (typing + accusés) — ne mélange pas avec postgres_changes. */
   useEffect(() => {
@@ -272,8 +285,9 @@ export function RealtimeChat({
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
         const p = payload as { userId?: string; typing?: boolean; name?: string };
-        if (!p.userId || p.userId === currentUserId) return;
-        if (peerUserId && p.userId !== peerUserId) return;
+        if (!p.userId || canonUserId(p.userId) === meId) return;
+        if (peerUserId && canonUserId(p.userId) !== canonUserId(peerUserId))
+          return;
         if (peerTypingClearRef.current) clearTimeout(peerTypingClearRef.current);
         if (!p.typing) {
           setPeerTyping(false);
@@ -292,8 +306,12 @@ export function RealtimeChat({
       .on("broadcast", { event: "read" }, ({ payload }) => {
         const p = payload as { userId?: string; lastReadAt?: string };
         if (!p.userId || !p.lastReadAt) return;
-        if (p.userId === currentUserId) return;
-        if (peerUserId && p.userId !== peerUserId) return;
+        if (canonUserId(p.userId) === meId) return;
+        if (
+          peerUserId &&
+          canonUserId(p.userId) !== canonUserId(peerUserId)
+        )
+          return;
         setPeerLastReadAt((prev) => {
           const next = p.lastReadAt!;
           if (!prev) return next;
@@ -430,7 +448,7 @@ export function RealtimeChat({
 
     const msg: ChatMsg = {
       id: data.id,
-      senderId: data.sender_id,
+      senderId: canonUserId(data.sender_id),
       content: data.content,
       createdAt: data.created_at,
       senderName: currentUserName,
@@ -598,10 +616,10 @@ export function RealtimeChat({
     await insertMessage("audio", "", up.publicUrl);
   }
 
-  const isMine = (msg: ChatMsg) => msg.senderId === currentUserId;
+  const isMine = (msg: ChatMsg) => msg.senderId === meId;
 
   function avatarFor(senderId: string) {
-    const p = profilesRef.current[senderId];
+    const p = profilesRef.current[canonUserId(senderId)];
     const name = p ? `${p.firstName} ${p.lastName}` : "?";
     const url = p?.avatarUrl;
     if (url) {
