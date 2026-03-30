@@ -13,6 +13,17 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function formatDate(iso: string, locale: string) {
+  try {
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar-MA" : "fr-FR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
 function Stars({ rating, size = "md" }: { rating: number; size?: "sm" | "md" }) {
   const cls = size === "sm" ? "h-4 w-4" : "h-5 w-5";
   return (
@@ -115,6 +126,9 @@ export default async function ProfilePage({ params, searchParams }: Props) {
                 <span className="text-xs text-[var(--text-muted)]">{targetProfile.transport_type}</span>
               )}
             </div>
+            <p className="mt-2 text-xs text-[var(--text-muted)]">
+              {t("joinedOn")} {formatDate(targetProfile.created_at, locale)}
+            </p>
           </div>
         </div>
 

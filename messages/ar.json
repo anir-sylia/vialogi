@@ -292,6 +292,7 @@
     "transactions": "المعاملات",
     "avgRating": "متوسط التقييم",
     "phone": "الهاتف",
+    "joinedOn": "تاريخ التسجيل",
     "reviewsHeading": "التقييمات المستلمة",
     "avatarHeading": "صورة الملف الشخصي",
     "avatarHint": "JPEG أو PNG أو WebP أو GIF — بحد أقصى 4 م.ب.",

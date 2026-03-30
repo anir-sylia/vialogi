@@ -292,6 +292,7 @@
     "transactions": "Transactions",
     "avgRating": "Note moyenne",
     "phone": "Téléphone",
+    "joinedOn": "Inscrit le",
     "reviewsHeading": "Avis reçus",
     "avatarHeading": "Photo de profil",
     "avatarHint": "JPEG, PNG, WebP ou GIF — max. 4 Mo.",
