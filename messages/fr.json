@@ -79,6 +79,29 @@
     "step3_desc": "Notre plateforme vous garantit les meilleures opportunités. Fini l'attente des intermédiaires, les offres viennent à vous.",
     "cta": "Comment ça marche"
   },
+  "homeTestimonials": {
+    "title": "Clients heureux",
+    "prevAria": "Témoignages précédents",
+    "nextAria": "Témoignages suivants",
+    "items": [
+      {
+        "name": "Yassine M.",
+        "quote": "Je voulais envoyer un gros réfrigérateur de Marrakech à Rabat : on me demandait 1 800 dirhams. Quand j'ai publié une annonce sur ViaLogi, un chauffeur en route d'Agadir à Rabat m'a contacté et on s'est mis d'accord. Il est passé à domicile pendant que j'étais au travail, a pris le frigo et l'a livré chez mon frère à Rabat pour seulement 500 dirhams."
+      },
+      {
+        "name": "Sophie L.",
+        "quote": "J'ai trouvé un transporteur en quelques minutes. Simple, rapide, et transparent."
+      },
+      {
+        "name": "Karim B.",
+        "quote": "Je rentabilise mes trajets et je reçois des demandes adaptées à ma route."
+      },
+      {
+        "name": "Inès M.",
+        "quote": "La messagerie intégrée facilite tout : on s'accorde sur les détails sans intermédiaires."
+      }
+    ]
+  },
   "searchRoute": {
     "metaTitle": "Colis sur votre trajet | Vialogi",
     "metaDescription": "Recherchez des envois entre villes et trouvez des colis à transporter sur votre route.",
