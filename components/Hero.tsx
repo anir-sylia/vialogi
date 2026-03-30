@@ -325,7 +325,7 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
             {t("ctaPrimary")}
           </button>
           <Link
-            href="/#how"
+            href="/how-it-works"
             className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--border)] bg-white px-8 py-3.5 text-base font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-muted)] sm:w-auto"
           >
             {t("ctaSecondary")}

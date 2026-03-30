@@ -42,7 +42,7 @@ export async function HomeStepsSection() {
 
           <div className="mt-10">
             <Link
-              href="/#how"
+              href="/how-it-works"
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
             >
               {t("cta")}

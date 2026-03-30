@@ -120,7 +120,7 @@ export function Navbar() {
   const links = (
     <>
       <Link
-        href="/#how"
+        href="/how-it-works"
         className="text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
         onClick={() => setOpen(false)}
       >
