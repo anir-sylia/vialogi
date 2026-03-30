@@ -1,5 +1,50 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+async function collectInboxShipmentIds(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  const allowed = new Set<string>();
+
+  const { data: sent } = await supabase
+    .from("messages")
+    .select("shipment_id")
+    .eq("sender_id", userId);
+  for (const r of sent ?? []) {
+    const sid = r.shipment_id as string;
+    if (sid) allowed.add(sid);
+  }
+
+  const { data: owned } = await supabase
+    .from("shipments")
+    .select("id")
+    .eq("user_id", userId);
+  for (const r of owned ?? []) {
+    const id = r.id as string;
+    if (id) allowed.add(id);
+  }
+
+  const { data: assigned } = await supabase
+    .from("shipments")
+    .select("id")
+    .eq("assigned_transporteur_id", userId);
+  for (const r of assigned ?? []) {
+    const id = r.id as string;
+    if (id) allowed.add(id);
+  }
+
+  const { data: offers } = await supabase
+    .from("offers")
+    .select("shipment_id")
+    .eq("transporteur_id", userId);
+  for (const r of offers ?? []) {
+    const sid = r.shipment_id as string;
+    if (sid) allowed.add(sid);
+  }
+
+  return Array.from(allowed);
+}
+
 export type InboxThread = {
   shipmentId: string;
   origin: string;
@@ -32,6 +77,12 @@ export async function listMessageInboxThreads(
     }
   }
 
+  /** Fils où l’utilisateur est réellement concerné (défense en profondeur côté app). */
+  const allowedShipmentIds = await collectInboxShipmentIds(supabase, userId);
+  if (allowedShipmentIds.length === 0) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("messages")
     .select(
@@ -49,6 +100,7 @@ export async function listMessageInboxThreads(
       )
     `,
     )
+    .in("shipment_id", allowedShipmentIds)
     .order("created_at", { ascending: false })
     .limit(400);
 
