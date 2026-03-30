@@ -185,7 +185,7 @@ export function Navbar() {
             <>
               <Link
                 href="/messages"
-                className="hidden text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--brand)] sm:inline"
+                className="hidden whitespace-nowrap text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--brand)] sm:inline"
               >
                 {t("messagesPage")}
               </Link>

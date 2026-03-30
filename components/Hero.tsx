@@ -364,7 +364,7 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
           </div>
         </div>
 
-        <div id="how" className="sr-only" aria-hidden />
+        {/* anchor moved to HomeStepsSection (visible) */}
         <div id="pricing" className="sr-only" aria-hidden />
         <div id="login" className="sr-only" aria-hidden />
       </div>

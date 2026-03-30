@@ -69,6 +69,16 @@
     "subtitle": "Repérez les colis sur votre trajet, remplissez vos retours à vide et gagnez en efficacité.",
     "cta": "Voir les colis sur mon trajet"
   },
+  "homeSteps": {
+    "title": "Comment envoyer ou recevoir un colis avec ViaLogi ?",
+    "step1_title": "Créez votre demande",
+    "step1_desc": "Entrez les détails de votre colis et recevez une estimation immédiate.",
+    "step2_title": "Optimisez vos trajets",
+    "step2_desc": "Cherchez les colis vers votre destination. Contactez les expéditeurs et rentabilisez votre trajet pour ne plus voyager à vide.",
+    "step3_title": "Recevez les meilleures offres",
+    "step3_desc": "Notre plateforme vous garantit les meilleures opportunités. Fini l'attente des intermédiaires, les offres viennent à vous.",
+    "cta": "Comment ça marche"
+  },
   "searchRoute": {
     "metaTitle": "Colis sur votre trajet | Vialogi",
     "metaDescription": "Recherchez des envois entre villes et trouvez des colis à transporter sur votre route.",

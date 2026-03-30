@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { HomeHashScroll } from "@/components/HomeHashScroll";
 import { Hero } from "@/components/Hero";
+import { HomeStepsSection } from "@/components/HomeStepsSection";
 import { MoroccoRoutePlanner } from "@/components/MoroccoRoutePlanner";
 import { PublishedToast } from "@/components/PublishedToast";
 import { ShipmentsSection } from "@/components/ShipmentsSection";
@@ -29,6 +30,7 @@ export default async function HomePage({ params, searchParams }: Props) {
         <PublishedToast />
       </Suspense>
       <Hero initialQuery={q} totalShipments={totalPublished} />
+      <HomeStepsSection />
       <MoroccoRoutePlanner />
       <ShipmentsSection locale={locale} searchQuery={q} />
     </>
