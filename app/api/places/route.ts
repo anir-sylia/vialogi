@@ -17,12 +17,20 @@ type PhotonFeature = {
   };
 };
 
+/** OSM place=* and common Photon `type` / `osm_value` labels (villes, douars, quartiers…). */
 const CITY_TYPES = new Set([
   "city",
   "town",
   "village",
+  "hamlet",
   "locality",
   "municipality",
+  "suburb",
+  "neighbourhood",
+  "neighborhood",
+  "quarter",
+  "district",
+  "borough",
 ]);
 
 /** Maroc — bbox Photon: minLon, minLat, maxLon, maxLat */
@@ -84,7 +92,7 @@ async function fetchPhotonFeatures(
   lang: string,
   bboxParam: string,
 ): Promise<PhotonFeature[]> {
-  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=30&lang=${lang}${bboxParam}`;
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=50&lang=${lang}${bboxParam}`;
   const upstream = await fetch(url, { cache: "no-store" });
   if (!upstream.ok) return [];
   const data = (await upstream.json()) as { features?: PhotonFeature[] };
@@ -139,7 +147,7 @@ export async function GET(request: Request) {
       };
     })
     .filter((p) => p.name.length > 0 && p.lat != null && p.lng != null)
-    .slice(0, 8);
+    .slice(0, 15);
 
   return NextResponse.json({ places: filtered });
 }

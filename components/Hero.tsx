@@ -311,9 +311,6 @@ export function Hero({ initialQuery = "", totalShipments = 0 }: HeroProps) {
               </ul>
             ) : null}
           </div>
-          <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
-            {t("searchHint")}
-          </p>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">

@@ -54,7 +54,6 @@
     "subtitle": "Recherchez une ville pour voir les flux disponibles et publiez vos besoins de transport en quelques minutes.",
     "searchLabel": "Ville ou région",
     "searchPlaceholder": "Ex. Rabat, Casablanca, Marrakech…",
-    "searchHint": "Villes au Maroc (OpenStreetMap / Photon)",
     "ctaPrimary": "Voir les annonces",
     "ctaSecondary": "Découvrir la plateforme",
     "statsPublished": "Envois publiés (base de données)",
