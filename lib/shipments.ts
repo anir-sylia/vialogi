@@ -2,6 +2,7 @@ import {
   createSupabaseAnonServerClient,
   createSupabaseServerClient,
 } from "@/utils/supabase/server";
+import { normalizeMoroccoCitySearchTerm } from "@/lib/morocco-city-search";
 
 export type ShipmentRow = {
   id: string;
@@ -35,24 +36,13 @@ export function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
-/**
- * Photon/OSM labels look like "Rabat, Rabat-Salé-Kénitra, Maroc" but `shipments`
- * often store only "Rabat". Use the first segment for ILIKE so both match.
- */
-function primaryLocalityForSearch(place: string): string {
-  const t = place.trim();
-  if (!t) return "";
-  const i = t.indexOf(",");
-  if (i === -1) return t;
-  return t.slice(0, i).trim();
-}
-
 const DEFAULT_HOME_LIMIT = 20;
 const SEARCH_RESULTS_LIMIT = 50;
 
 /**
- * Latest shipments from Supabase. With a search term, filters `origin` and
- * `origin` with ILIKE and returns more rows.
+ * Latest shipments from Supabase. With a search term, filters `origin`
+ * (départ) with ILIKE. Libellés Photon (« Rabat, Région, Maroc ») et noms arabes
+ * sont normalisés pour coller aux valeurs stockées (souvent en latin).
  */
 export async function listShipments(
   search: string | undefined | null,
@@ -60,9 +50,7 @@ export async function listShipments(
 ) {
   try {
     const supabase = createSupabaseAnonServerClient();
-    const q = (search?.trim() ?? "")
-      .replace(/,/g, " ")
-      .replace(/"/g, "");
+    const q = normalizeMoroccoCitySearchTerm(search ?? "");
 
     const hasSearch = q.length > 0;
     const limit =
@@ -114,8 +102,8 @@ export async function listShipmentsForTransportSearch(
   try {
     const supabase = createSupabaseAnonServerClient();
     const limit = options?.limit ?? 50;
-    const o = primaryLocalityForSearch(originSubstr ?? "");
-    const d = primaryLocalityForSearch(destinationSubstr ?? "");
+    const o = normalizeMoroccoCitySearchTerm(originSubstr ?? "");
+    const d = normalizeMoroccoCitySearchTerm(destinationSubstr ?? "");
 
     let query = supabase
       .from("shipments")

@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  latinAliasForArabicMoroccoCity,
+  primaryLocalityForSearch,
+} from "@/lib/morocco-city-search";
 
 type PhotonFeature = {
   type: "Feature";
@@ -115,13 +119,31 @@ export async function GET(request: Request) {
   let raw: PhotonFeature[];
 
   if (countryMa) {
-    const [arFeatures, frFeatures] = await Promise.all([
-      fetchPhotonFeatures(q, "ar", bboxParam),
-      fetchPhotonFeatures(q, "fr", bboxParam),
-    ]);
-    const preferred = lang === "ar" ? arFeatures : frFeatures;
-    const secondary = lang === "ar" ? frFeatures : arFeatures;
-    raw = mergeDedupeFeatures(preferred, secondary);
+    const primary = primaryLocalityForSearch(q);
+    const collapsed = primary.replace(/\s+/g, " ").trim();
+    const queriesToTry = new Set<string>();
+    if (collapsed.length >= 2) {
+      queriesToTry.add(collapsed);
+      const alias = latinAliasForArabicMoroccoCity(collapsed);
+      if (alias) queriesToTry.add(alias);
+    }
+    if (queriesToTry.size === 0 && q.length >= 2) {
+      queriesToTry.add(q);
+    }
+
+    let rawAcc: PhotonFeature[] = [];
+    for (const qq of queriesToTry) {
+      const [arFeatures, frFeatures] = await Promise.all([
+        fetchPhotonFeatures(qq, "ar", bboxParam),
+        fetchPhotonFeatures(qq, "fr", bboxParam),
+      ]);
+      const merged = mergeDedupeFeatures(
+        lang === "ar" ? arFeatures : frFeatures,
+        lang === "ar" ? frFeatures : arFeatures,
+      );
+      rawAcc = mergeDedupeFeatures(rawAcc, merged);
+    }
+    raw = rawAcc;
   } else {
     raw = await fetchPhotonFeatures(q, lang, bboxParam);
   }
