@@ -90,15 +90,15 @@
       },
       {
         "name": "Sophie L.",
-        "quote": "J'ai trouvé un transporteur en quelques minutes. Simple, rapide, et transparent."
+        "quote": "J'ai trouvé un transporteur en quelques minutes : le service est clair et simple, sans prise de tête. Au début j'étais un peu inquiète, mais depuis que j'ai essayé ViaLogi, j'ai la paix — fini le casse-tête pour organiser l'envoi. La livraison s'est bien passée et le prix était très correct par rapport au marché."
       },
       {
         "name": "Karim B.",
-        "quote": "Je rentabilise mes trajets et je reçois des demandes adaptées à ma route."
+        "quote": "Grâce à ViaLogi, je rentabilise mon trajet et je termine avec du profit sans repartir à vide. La plateforme m'a permis de trouver des clients sur ma route et de les aider à faire livrer leurs envois, tout en couvrant mes frais de route et de carburant. Une idée géniale !"
       },
       {
         "name": "Inès M.",
-        "quote": "La messagerie intégrée facilite tout : on s'accorde sur les détails sans intermédiaires."
+        "quote": "La messagerie directement sur la plateforme simplifie l'accord sur tous les détails, sans intermédiaires ni perte de temps. On se sent en confiance quand on échange avec l'autre partie et qu'on clarifie tout ensemble. Excellente expérience : je recommencerai sans hésiter."
       }
     ]
   },
@@ -227,7 +227,7 @@
   },
   "shipments": {
     "heading": "Envois disponibles",
-    "subheading": "Données en direct depuis Supabase. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
+    "subheading": "Données mises à jour en temps réel. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
     "parcelPhotoAlt": "Photo du colis",
     "parcelDescription": "Détail du colis",
     "cardRoute": "Trajet",

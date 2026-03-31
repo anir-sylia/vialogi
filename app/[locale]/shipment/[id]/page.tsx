@@ -2,7 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
-import { getShipmentForViewer } from "@/lib/shipments";
+import { getShipmentById } from "@/lib/shipments";
 import {
   getProfile,
   getOffersForShipment,
@@ -38,13 +38,11 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   const sp = await searchParams;
   setRequestLocale(locale);
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const shipment = await getShipmentForViewer(id, user?.id ?? null);
+  const shipment = await getShipmentById(id);
   if (!shipment) notFound();
+
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return redirect({
