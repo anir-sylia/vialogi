@@ -52,6 +52,12 @@ export default async function LoginPage({ params, searchParams }: Props) {
 
       <LoginForm locale={locale} nextPath={nextPath} action={signIn} />
 
+      <p className="mt-4 text-center text-sm">
+        <Link href="/forgot-password" className="font-medium text-[var(--brand)] hover:underline">
+          {t("forgotLink")}
+        </Link>
+      </p>
+
       <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
         {t("noAccount")}{" "}
         <Link
