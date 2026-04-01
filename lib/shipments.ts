@@ -261,6 +261,43 @@ export async function getShipmentForViewer(
   }
 }
 
+/**
+ * Annonces dont l’expéditeur est `profileUserId`.
+ * `includeRemoved` : true pour le propriétaire du profil ou un admin (statut « retirée » inclus).
+ */
+export async function listShipmentsForProfileUser(
+  profileUserId: string,
+  options: { includeRemoved: boolean },
+): Promise<ShipmentRow[]> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("shipments")
+      .select("*")
+      .eq("user_id", profileUserId)
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error(
+        "listShipmentsForProfileUser:",
+        error.message,
+        error.code,
+      );
+      return [];
+    }
+
+    const rows = (data ?? []).map((r) =>
+      mapShipmentRow(r as Record<string, unknown>),
+    );
+    if (options.includeRemoved) return rows;
+    return rows.filter((r) => isPublicShipmentStatus(r.status));
+  } catch (e) {
+    console.error("listShipmentsForProfileUser:", e);
+    return [];
+  }
+}
+
 /** Toutes les annonces du compte connecté (y compris retirées). */
 export async function listShipmentsForAuthenticatedOwner(): Promise<
   ShipmentRow[]

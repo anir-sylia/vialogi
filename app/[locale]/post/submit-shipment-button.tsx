@@ -5,10 +5,17 @@ import { useFormStatus } from "react-dom";
 type Props = {
   label: string;
   pendingLabel: string;
+  /** Si défini (ex. soumission manuelle FormData), remplace useFormStatus. */
+  pending?: boolean;
 };
 
-export function SubmitShipmentButton({ label, pendingLabel }: Props) {
-  const { pending } = useFormStatus();
+export function SubmitShipmentButton({
+  label,
+  pendingLabel,
+  pending: pendingProp,
+}: Props) {
+  const { pending: formPending } = useFormStatus();
+  const pending = pendingProp ?? formPending;
 
   return (
     <button

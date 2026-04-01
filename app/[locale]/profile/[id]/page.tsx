@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { getProfile, getReviewsForUser } from "@/lib/auth";
 import type { Profile } from "@/lib/auth";
+import { listShipmentsForProfileUser } from "@/lib/shipments";
 import { ReviewsList } from "@/components/shipment/ReviewsList";
 import { ProfilePhotoForms } from "@/components/profile/ProfilePhotoForms";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
@@ -53,9 +54,20 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isOwnProfile = Boolean(user && user.id === id);
+  const viewerProfile = user ? await getProfile(user.id) : null;
+  const viewerIsAdmin = viewerProfile?.role === "admin";
+  const showPostings = isOwnProfile || viewerIsAdmin;
 
   const t = await getTranslations("profile");
+  const tShipments = await getTranslations("shipments");
+  const tShipmentDetail = await getTranslations("shipmentDetail");
   const reviews = await getReviewsForUser(id);
+
+  const postings = showPostings
+    ? await listShipmentsForProfileUser(id, {
+        includeRemoved: isOwnProfile || viewerIsAdmin,
+      })
+    : [];
 
   const profileMap: Record<string, Profile> = {};
   profileMap[id] = targetProfile;
@@ -212,6 +224,63 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           </div>
         ) : null}
       </div>
+
+      {showPostings ? (
+        <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">
+            {t("postingsHeading")}
+          </h2>
+          {viewerIsAdmin && !isOwnProfile ? (
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              {t("postingsAdminHint")}
+            </p>
+          ) : null}
+          {postings.length === 0 ? (
+            <p className="mt-4 text-sm text-[var(--text-muted)]">
+              {t("postingsEmpty")}
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-[var(--border)]">
+              {postings.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                      {tShipments("cardRoute")}
+                    </p>
+                    <p className="mt-0.5 font-medium text-[var(--text-primary)]">
+                      {s.origin}
+                      <span className="mx-1.5 text-[var(--text-muted)]">→</span>
+                      {s.destination}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">
+                      {formatDate(s.created_at, locale)}
+                      {" · "}
+                      <span className="font-medium text-[var(--text-primary)]">
+                        {tShipmentDetail(
+                          `status_${s.status}` as
+                            | "status_open"
+                            | "status_assigned"
+                            | "status_completed"
+                            | "status_removed",
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                  <Link
+                    href={`/shipment/${s.id}`}
+                    className="shrink-0 text-sm font-semibold text-[var(--brand)] hover:underline"
+                  >
+                    {tShipments("viewDetails")}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
 
       <div className="mt-8 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
         <h2 className="mb-4 text-lg font-bold text-[var(--text-primary)]">

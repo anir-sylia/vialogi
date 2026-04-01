@@ -217,6 +217,11 @@
     "pricePlaceholder": "مثال: 4500",
     "parcelPhoto": "صور الطرد (اختياري)",
     "parcelPhotoHint": "حتى 3 صور (JPEG أو PNG أو WebP أو GIF) — بحد أقصى 1,5 م.ب. لكل ملف.",
+    "parcelPhotoCameraHint": "على الهاتف: اختر صورة واحدة في كل مرة (كاميرا أو معرض)؛ تُضاف كل صورة للمعاينات. تجنب اختيار عدة لقطات دفعة واحدة من الكاميرا.",
+    "parcelPhotoCount": "{count} / {max} — يمكنك إضافة المزيد.",
+    "removeParcelPhoto": "إزالة هذه الصورة",
+    "parcelPhotoErrorType": "صيغة غير مقبولة: JPEG أو PNG أو WebP أو GIF فقط.",
+    "parcelPhotoErrorSize": "الملف كبير جدًا (حد أقصى 1,5 م.ب. لكل صورة).",
     "parcelDescription": "الطرد والوصف",
     "parcelDescriptionHint": "صف المحتوى، الأبعاد، الهشاشة، وقت الاستلام… (اختياري، 2000 حرفًا كحد أقصى).",
     "parcelDescriptionPlaceholder": "مثال: كرتون مغلق ~8 كغ، هش، الاستلام قبل 18…",
@@ -366,7 +371,10 @@
     "photoError_forbidden": "غير مسموح بهذا الإجراء لهذا الملف.",
     "photoError_db": "فشل الحفظ: نفّذ سكربت SQL « 014_profile_photos_storage » في Supabase، تحقق من SUPABASE_SERVICE_ROLE_KEY على Vercel، ثم أعد المحاولة.",
     "messagesCta": "رسائلي",
-    "messagesHint": "جميع محادثاتك في صفحة واحدة."
+    "messagesHint": "جميع محادثاتك في صفحة واحدة.",
+    "postingsHeading": "الإعلانات المنشورة",
+    "postingsEmpty": "لا توجد إعلانات لهذا الحساب.",
+    "postingsAdminHint": "عرض المشرف: كل الإعلانات، بما فيها المخفية عن العامة."
   },
   "chat": {
     "back": "رجوع",

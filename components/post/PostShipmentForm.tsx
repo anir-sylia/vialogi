@@ -2,9 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { type ChangeEvent, useCallback, useState } from "react";
-
-const MAX_PARCEL_PHOTOS = 3;
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { submitShipment } from "@/lib/actions/post-shipment";
 import { SubmitShipmentButton } from "@/app/[locale]/post/submit-shipment-button";
 import {
@@ -12,6 +17,16 @@ import {
   type GeocodeResult,
 } from "@/components/post/NominatimAutocomplete";
 import { ShipmentDateRangeFields } from "@/components/post/ShipmentDateRangeFields";
+
+const MAX_PARCEL_PHOTOS = 3;
+/** Aligné sur `post-shipment.ts` (Vercel ~4,5 Mo / 3). */
+const MAX_PARCEL_PHOTO_BYTES = Math.floor((4.5 * 1024 * 1024) / 3);
+const ALLOWED_PARCEL_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
 
 const PostShipmentRoutingMap = dynamic(
   () => import("@/components/post/PostShipmentRoutingMap"),
@@ -62,21 +77,68 @@ export function PostShipmentForm({ locale, serverError }: Props) {
   );
   const [destCoords, setDestCoords] = useState<[number, number] | null>(null);
   const [routeKm, setRouteKm] = useState<number | null>(null);
+  const [parcelFiles, setParcelFiles] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDistanceKm = useCallback((km: number | null) => {
     setRouteKm(km);
   }, []);
 
-  const onParcelPhotosChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const input = e.target;
-    const files = input.files;
-    if (!files || files.length <= MAX_PARCEL_PHOTOS) return;
-    const dt = new DataTransfer();
-    for (let i = 0; i < MAX_PARCEL_PHOTOS; i++) {
-      dt.items.add(files[i]!);
-    }
-    input.files = dt.files;
+  /** Une seule photo par choix + reset input : indispensable caméra mobile (sinon seule la dernière reste). */
+  const onParcelPhotoPicked = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const input = e.target;
+      const file = input.files?.[0];
+      input.value = "";
+      setPhotoError(null);
+      if (!file || file.size === 0) return;
+      if (!ALLOWED_PARCEL_TYPES.has(file.type)) {
+        setPhotoError(t("parcelPhotoErrorType"));
+        return;
+      }
+      if (file.size > MAX_PARCEL_PHOTO_BYTES) {
+        setPhotoError(t("parcelPhotoErrorSize"));
+        return;
+      }
+      setParcelFiles((prev) => {
+        if (prev.length >= MAX_PARCEL_PHOTOS) return prev;
+        return [...prev, file];
+      });
+    },
+    [t],
+  );
+
+  const removeParcelPhoto = useCallback((index: number) => {
+    setParcelFiles((prev) => prev.filter((_, i) => i !== index));
+    setPhotoError(null);
   }, []);
+
+  const previewUrls = useMemo(
+    () => parcelFiles.map((f) => URL.createObjectURL(f)),
+    [parcelFiles],
+  );
+  useEffect(() => {
+    return () => previewUrls.forEach((u) => URL.revokeObjectURL(u));
+  }, [previewUrls]);
+
+  const onFormSubmit = useCallback(
+    async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      setIsSubmitting(true);
+      try {
+        const fd = new FormData(form);
+        for (const f of parcelFiles) {
+          fd.append("parcel_photos", f);
+        }
+        await submitShipment(fd);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [parcelFiles],
+  );
 
   const onOriginSelect = (r: GeocodeResult) => {
     setOriginLabel(r.label ?? r.display_name);
@@ -92,7 +154,7 @@ export function PostShipmentForm({ locale, serverError }: Props) {
 
   return (
     <form
-      action={submitShipment}
+      onSubmit={onFormSubmit}
       encType="multipart/form-data"
       className="mt-8 space-y-6"
     >
@@ -167,15 +229,55 @@ export function PostShipmentForm({ locale, serverError }: Props) {
             <p className="mb-2 text-xs text-[var(--text-muted)]">
               {t("parcelPhotoHint")}
             </p>
+            <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">
+              {t("parcelPhotoCameraHint")}
+            </p>
             <input
               id="parcel_photos"
-              name="parcel_photos"
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
-              multiple
-              onChange={onParcelPhotosChange}
-              className="w-full max-w-md text-sm text-[var(--text-primary)] file:me-3 file:rounded-lg file:border-0 file:bg-[var(--surface-muted)] file:px-4 file:py-2 file:font-medium file:text-[var(--text-primary)]"
+              onChange={onParcelPhotoPicked}
+              disabled={parcelFiles.length >= MAX_PARCEL_PHOTOS}
+              className="w-full max-w-md text-sm text-[var(--text-primary)] file:me-3 file:rounded-lg file:border-0 file:bg-[var(--surface-muted)] file:px-4 file:py-2 file:font-medium file:text-[var(--text-primary)] disabled:opacity-50"
             />
+            {photoError ? (
+              <p className="mt-2 text-sm text-red-600" role="alert">
+                {photoError}
+              </p>
+            ) : null}
+            {parcelFiles.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {parcelFiles.map((file, i) => (
+                  <li
+                    key={`${file.name}-${file.size}-${file.lastModified}-${i}`}
+                    className="relative h-20 w-20 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-muted)]"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewUrls[i]}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeParcelPhoto(i)}
+                      className="absolute end-0.5 top-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/65 text-xs font-bold text-white hover:bg-black/80"
+                      aria-label={t("removeParcelPhoto")}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {parcelFiles.length > 0 && parcelFiles.length < MAX_PARCEL_PHOTOS ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)]">
+                {t("parcelPhotoCount", {
+                  count: parcelFiles.length,
+                  max: MAX_PARCEL_PHOTOS,
+                })}
+              </p>
+            ) : null}
           </div>
 
           <div>
@@ -244,6 +346,7 @@ export function PostShipmentForm({ locale, serverError }: Props) {
           <SubmitShipmentButton
             label={t("submit")}
             pendingLabel={t("submitting")}
+            pending={isSubmitting}
           />
         </div>
 

@@ -217,6 +217,11 @@
     "pricePlaceholder": "Ex. 4500",
     "parcelPhoto": "Photos du colis (optionnel)",
     "parcelPhotoHint": "Jusqu'à 3 images (JPEG, PNG, WebP ou GIF) — max. 1,5 Mo par fichier.",
+    "parcelPhotoCameraHint": "Sur mobile : choisissez une photo à la fois (caméra ou galerie) ; chaque nouvelle image s’ajoute aux miniatures. Évite « plusieurs fichiers » d’un coup avec l’appareil photo.",
+    "parcelPhotoCount": "{count} / {max} — vous pouvez encore ajouter des photos.",
+    "removeParcelPhoto": "Retirer cette photo",
+    "parcelPhotoErrorType": "Format non accepté : JPEG, PNG, WebP ou GIF uniquement.",
+    "parcelPhotoErrorSize": "Fichier trop volumineux (max. 1,5 Mo par image).",
     "parcelDescription": "Colis et description",
     "parcelDescriptionHint": "Décrivez le contenu, dimensions, fragilité, créneau de retrait… (optionnel, max. 2000 caractères).",
     "parcelDescriptionPlaceholder": "Ex. : carton scellé ~8 kg, fragile, à retirer avant 18h…",
@@ -366,7 +371,10 @@
     "photoError_forbidden": "Action non autorisée pour ce profil.",
     "photoError_db": "Échec d’enregistrement : exécutez le script SQL « 014_profile_photos_storage » dans Supabase (bucket + colonnes), vérifiez SUPABASE_SERVICE_ROLE_KEY sur Vercel, puis réessayez.",
     "messagesCta": "Mes messages",
-    "messagesHint": "Toutes vos conversations sur une seule page."
+    "messagesHint": "Toutes vos conversations sur une seule page.",
+    "postingsHeading": "Annonces publiées",
+    "postingsEmpty": "Aucune annonce pour ce compte.",
+    "postingsAdminHint": "Vue admin : annonces visibles, y compris retirées de la liste publique."
   },
   "chat": {
     "back": "Retour",
