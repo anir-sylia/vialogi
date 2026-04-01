@@ -17,8 +17,11 @@ import {
 } from "@/utils/supabase/env";
 import { isPostingEnabled } from "@/lib/posting";
 
-/** ≤4MB: Vercel serverless request body max ~4.5MB; multipart overhead needs margin. */
-const MAX_PARCEL_PHOTO_BYTES = 4 * 1024 * 1024;
+/**
+ * ~1,5 Mo par fichier × 3 ≤ plafond corps requête Vercel (~4,5 Mo) + marge multipart.
+ */
+const MAX_PARCEL_PHOTO_BYTES = Math.floor((4.5 * 1024 * 1024) / 3);
+const MAX_PARCEL_PHOTOS = 3;
 const ALLOWED_PARCEL_PHOTO_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -148,34 +151,41 @@ async function ensureUserProfile(
   return true;
 }
 
-async function uploadParcelPhotoAndUpdateRow(
+async function uploadParcelPhotosAndUpdateRow(
   client: SupabaseClient,
   shipmentId: string,
-  file: File,
+  files: File[],
 ): Promise<void> {
-  const ext = extFromMime(file.type);
-  const path = `${shipmentId}/${randomUUID()}.${ext}`;
-  const bytes = await file.arrayBuffer();
-  const { error: upErr } = await client.storage
-    .from(PARCEL_PHOTOS_BUCKET)
-    .upload(path, bytes, {
-      contentType: file.type,
-      upsert: false,
-    });
-  if (upErr) {
-    console.error("uploadParcelPhoto:", upErr.message);
-    return;
+  const urls: string[] = [];
+  for (const file of files) {
+    const ext = extFromMime(file.type);
+    const path = `${shipmentId}/${randomUUID()}.${ext}`;
+    const bytes = await file.arrayBuffer();
+    const { error: upErr } = await client.storage
+      .from(PARCEL_PHOTOS_BUCKET)
+      .upload(path, bytes, {
+        contentType: file.type,
+        upsert: false,
+      });
+    if (upErr) {
+      console.error("uploadParcelPhoto:", upErr.message);
+      continue;
+    }
+    const { data: pub } = client.storage
+      .from(PARCEL_PHOTOS_BUCKET)
+      .getPublicUrl(path);
+    urls.push(pub.publicUrl);
   }
-  const { data: pub } = client.storage
-    .from(PARCEL_PHOTOS_BUCKET)
-    .getPublicUrl(path);
-  const publicUrl = pub.publicUrl;
+  if (urls.length === 0) return;
   const { error: updErr } = await client
     .from("shipments")
-    .update({ parcel_photo_url: publicUrl })
+    .update({
+      parcel_photo_urls: urls,
+      parcel_photo_url: urls[0] ?? null,
+    })
     .eq("id", shipmentId);
   if (updErr) {
-    console.error("parcel_photo_url update:", updErr.message);
+    console.error("parcel_photo_urls update:", updErr.message);
   }
 }
 
@@ -230,10 +240,13 @@ export async function submitShipment(formData: FormData) {
     return fail(locale, "env");
   }
 
-  const rawPhoto = formData.get("parcel_photo");
-  let photoFile: File | null = null;
-  if (rawPhoto instanceof File && rawPhoto.size > 0) {
-    photoFile = rawPhoto;
+  const rawPhotos = formData.getAll("parcel_photos");
+  const photoFiles: File[] = [];
+  for (const item of rawPhotos) {
+    if (item instanceof File && item.size > 0) {
+      photoFiles.push(item);
+      if (photoFiles.length >= MAX_PARCEL_PHOTOS) break;
+    }
   }
 
   let insertError: {
@@ -256,14 +269,18 @@ export async function submitShipment(formData: FormData) {
     }
     authedUser = user ?? null;
 
-    if (photoFile) {
+    if (photoFiles.length > 0) {
       if (!user) {
-        photoFile = null;
-      } else if (
-        photoFile.size > MAX_PARCEL_PHOTO_BYTES ||
-        !ALLOWED_PARCEL_PHOTO_TYPES.has(photoFile.type)
-      ) {
-        return fail(locale, "invalid_photo");
+        photoFiles.length = 0;
+      } else {
+        for (const f of photoFiles) {
+          if (
+            f.size > MAX_PARCEL_PHOTO_BYTES ||
+            !ALLOWED_PARCEL_PHOTO_TYPES.has(f.type)
+          ) {
+            return fail(locale, "invalid_photo");
+          }
+        }
       }
     }
 
@@ -344,13 +361,17 @@ export async function submitShipment(formData: FormData) {
     if (
       !insertError &&
       insertedId &&
-      photoFile &&
+      photoFiles.length > 0 &&
       user &&
       authSupabase
     ) {
       const svc = createSupabaseServiceRoleClientIfConfigured();
       const uploadClient = svc ?? authSupabase;
-      await uploadParcelPhotoAndUpdateRow(uploadClient, insertedId, photoFile);
+      await uploadParcelPhotosAndUpdateRow(
+        uploadClient,
+        insertedId,
+        photoFiles,
+      );
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

@@ -18,6 +18,8 @@ export type ShipmentRow = {
   removed_at: string | null;
   removal_reason: string | null;
   parcel_photo_url: string | null;
+  /** URLs des photos (ordre d’affichage), jusqu’à 3 côté app. */
+  parcel_photo_urls: string[];
   parcel_description: string | null;
   /** ISO date `YYYY-MM-DD` — premier jour de retrait possible. */
   pickup_available_from: string | null;
@@ -166,7 +168,22 @@ export async function countShipments(): Promise<number> {
   }
 }
 
+function normalizeParcelPhotoUrls(data: Record<string, unknown>): string[] {
+  const raw = data.parcel_photo_urls;
+  if (Array.isArray(raw)) {
+    return raw.filter(
+      (u): u is string => typeof u === "string" && u.trim().length > 0,
+    );
+  }
+  const legacy = data.parcel_photo_url;
+  if (typeof legacy === "string" && legacy.trim().length > 0) {
+    return [legacy.trim()];
+  }
+  return [];
+}
+
 function mapShipmentRow(data: Record<string, unknown>): ShipmentRow {
+  const parcel_photo_urls = normalizeParcelPhotoUrls(data);
   return {
     id: String(data.id),
     created_at: String(data.created_at),
@@ -181,12 +198,18 @@ function mapShipmentRow(data: Record<string, unknown>): ShipmentRow {
     removed_by: (data.removed_by as string | null) ?? null,
     removed_at: (data.removed_at as string | null) ?? null,
     removal_reason: (data.removal_reason as string | null) ?? null,
-    parcel_photo_url: (data.parcel_photo_url as string | null) ?? null,
+    parcel_photo_urls,
+    parcel_photo_url: parcel_photo_urls[0] ?? null,
     parcel_description: (data.parcel_description as string | null) ?? null,
     pickup_available_from:
       (data.pickup_available_from as string | null) ?? null,
     deliver_by: (data.deliver_by as string | null) ?? null,
   };
+}
+
+/** Liste des URLs affichables (alias explicite pour les vues). */
+export function getParcelPhotoUrls(row: ShipmentRow): string[] {
+  return row.parcel_photo_urls;
 }
 
 export async function getShipmentById(id: string): Promise<ShipmentRow | null> {

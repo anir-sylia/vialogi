@@ -2,7 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { type ChangeEvent, useCallback, useState } from "react";
+
+const MAX_PARCEL_PHOTOS = 3;
 import { submitShipment } from "@/lib/actions/post-shipment";
 import { SubmitShipmentButton } from "@/app/[locale]/post/submit-shipment-button";
 import {
@@ -63,6 +65,17 @@ export function PostShipmentForm({ locale, serverError }: Props) {
 
   const onDistanceKm = useCallback((km: number | null) => {
     setRouteKm(km);
+  }, []);
+
+  const onParcelPhotosChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const files = input.files;
+    if (!files || files.length <= MAX_PARCEL_PHOTOS) return;
+    const dt = new DataTransfer();
+    for (let i = 0; i < MAX_PARCEL_PHOTOS; i++) {
+      dt.items.add(files[i]!);
+    }
+    input.files = dt.files;
   }, []);
 
   const onOriginSelect = (r: GeocodeResult) => {
@@ -146,7 +159,7 @@ export function PostShipmentForm({ locale, serverError }: Props) {
 
           <div>
             <label
-              htmlFor="parcel_photo"
+              htmlFor="parcel_photos"
               className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
             >
               {t("parcelPhoto")}
@@ -155,10 +168,12 @@ export function PostShipmentForm({ locale, serverError }: Props) {
               {t("parcelPhotoHint")}
             </p>
             <input
-              id="parcel_photo"
-              name="parcel_photo"
+              id="parcel_photos"
+              name="parcel_photos"
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              onChange={onParcelPhotosChange}
               className="w-full max-w-md text-sm text-[var(--text-primary)] file:me-3 file:rounded-lg file:border-0 file:bg-[var(--surface-muted)] file:px-4 file:py-2 file:font-medium file:text-[var(--text-primary)]"
             />
           </div>

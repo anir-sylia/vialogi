@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { shipmentDateRangeParts } from "@/lib/format-shipment-date-range";
 import {
+  getParcelPhotoUrls,
   listShipments,
   listShipmentsForAuthenticatedOwner,
   type ShipmentRow,
@@ -107,20 +108,27 @@ export async function ShipmentsSection({
               s.deliver_by,
               locale,
             );
+            const parcelUrls = getParcelPhotoUrls(s);
+            const mainPhoto = parcelUrls[0];
             return (
               <li key={s.id}>
                 <article className="flex h-full flex-col rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
-                  <div className="mb-4 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
-                    {s.parcel_photo_url ? (
+                  <div className="relative mb-4 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
+                    {mainPhoto ? (
                       <>
                         {/* Supabase Storage URL — pas de domaine fixe pour next/image en OSS */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={s.parcel_photo_url}
+                          src={mainPhoto}
                           alt={t("parcelPhotoAlt")}
                           className="aspect-[4/3] w-full object-cover"
                           loading="lazy"
                         />
+                        {parcelUrls.length > 1 ? (
+                          <span className="absolute bottom-2 end-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold text-white">
+                            {parcelUrls.length}
+                          </span>
+                        ) : null}
                       </>
                     ) : (
                       <div

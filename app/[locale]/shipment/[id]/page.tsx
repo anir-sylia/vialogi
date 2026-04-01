@@ -2,8 +2,9 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
+import { ParcelPhotoGallery } from "@/components/shipment/ParcelPhotoGallery";
 import { shipmentDateRangeParts } from "@/lib/format-shipment-date-range";
-import { getShipmentById } from "@/lib/shipments";
+import { getParcelPhotoUrls, getShipmentById } from "@/lib/shipments";
 import {
   getProfile,
   getOffersForShipment,
@@ -200,16 +201,10 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
       ) : null}
 
       <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
-        {shipment.parcel_photo_url ? (
-          <div className="mb-6 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={shipment.parcel_photo_url}
-              alt={t("parcelPhoto")}
-              className="max-h-[min(24rem,50vh)] w-full object-contain"
-            />
-          </div>
-        ) : null}
+        <ParcelPhotoGallery
+          urls={getParcelPhotoUrls(shipment)}
+          title={`${shipment.origin} → ${shipment.destination}`}
+        />
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
