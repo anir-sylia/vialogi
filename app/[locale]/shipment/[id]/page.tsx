@@ -83,7 +83,8 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   const isTransporteur = profile.role === "transporteur";
   const isAdmin = profile.role === "admin";
   const canRemoveShipment = isOwner || isAdmin;
-  const canChat = isOwner || isTransporteur;
+  /** Seuls les transporteurs (non expéditeur) peuvent ouvrir le chat — pas de « discuter avec soi-même ». */
+  const canChat = isTransporteur && !isOwner;
 
   const offers = await getOffersForShipment(id);
 

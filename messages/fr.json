@@ -226,6 +226,10 @@
     "mapPlaceholder": "Saisissez l'origine et la destination puis choisissez une suggestion dans chaque liste — le tracé routier s'affichera ici.",
     "routeCalculating": "Calcul du tracé routier…",
     "routeDistanceKm": "Distance estimée (route) : {km} km",
+    "dateFrom": "Disponible à partir du",
+    "dateTo": "À livrer au plus tard le",
+    "dateRangeHint": "La fenêtre doit commencer aujourd'hui au plus tôt ; la date de fin ne peut pas précéder le début.",
+    "dateRangeBetween": "Entre le {from} et le {to}",
     "errors": {
       "required_fields": "L'origine et la destination sont obligatoires.",
       "invalid_weight": "Indiquez un poids valide (nombre supérieur à 0).",
