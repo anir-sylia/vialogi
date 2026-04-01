@@ -26,30 +26,72 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    const token = tokenHash?.trim();
+    let ft: number | null = null;
+    let subscription: { unsubscribe: () => void } | null = null;
+
     async function run() {
-      const token = tokenHash?.trim();
-      if (!token) {
+      if (token) {
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: "recovery",
+          });
+          if (!cancelled) setInvalid(Boolean(error));
+        } catch {
+          if (!cancelled) setInvalid(true);
+        } finally {
+          if (!cancelled) setVerifying(false);
+        }
+        return;
+      }
+
+      ft = window.setTimeout(() => {
         if (!cancelled) {
           setInvalid(true);
           setVerifying(false);
         }
-        return;
-      }
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: "recovery",
-        });
-        if (!cancelled) setInvalid(Boolean(error));
-      } catch {
-        if (!cancelled) setInvalid(true);
-      } finally {
-        if (!cancelled) setVerifying(false);
-      }
+      }, 8000) as number;
+
+      const handleReady = () => {
+        if (cancelled) return;
+        if (ft) {
+          window.clearTimeout(ft);
+          ft = null;
+        }
+        setInvalid(false);
+        setVerifying(false);
+      };
+
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+        (event) => {
+          if (cancelled) return;
+          if (event === "PASSWORD_RECOVERY") handleReady();
+        },
+      );
+      subscription = sub;
+
+      void (async () => {
+        for (let i = 0; i < 20; i++) {
+          if (cancelled) return;
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (session) {
+            handleReady();
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 120));
+        }
+      })();
     }
+
     void run();
+
     return () => {
       cancelled = true;
+      if (ft) window.clearTimeout(ft);
+      subscription?.unsubscribe();
     };
   }, [supabase, tokenHash]);
 
@@ -135,4 +177,3 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
     </form>
   );
 }
-

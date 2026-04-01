@@ -15,18 +15,26 @@ export function ForgotPasswordForm({ locale }: Props) {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (pending) return;
     setPending(true);
     setDone(false);
+    setSendFailed(false);
     try {
-      await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, locale }),
-      });
+      const res = await fetch(
+        `${window.location.origin}/api/auth/forgot-password`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, locale }),
+        },
+      );
+      if (!res.ok) setSendFailed(true);
+    } catch {
+      setSendFailed(true);
     } finally {
       setPending(false);
       setDone(true);
@@ -61,7 +69,15 @@ export function ForgotPasswordForm({ locale }: Props) {
         {pending ? t("forgotSubmitting") : t("forgotSubmit")}
       </button>
 
-      {done ? (
+      {done && sendFailed ? (
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          role="alert"
+        >
+          {t("forgotSendFailed")}
+        </div>
+      ) : null}
+      {done && !sendFailed ? (
         <div
           className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]"
           role="status"

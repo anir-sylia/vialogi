@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
-import ResetPasswordEmail from "@/emails/ResetPasswordEmail";
-import { createSupabaseServiceRoleClientIfConfigured } from "@/utils/supabase/server";
+import { createSupabaseAnonServerClient } from "@/utils/supabase/server";
 
 type Body = {
   email?: string;
@@ -24,6 +22,13 @@ function getOrigin(request: Request): string {
   return new URL(request.url).origin;
 }
 
+/** Si défini (ex. https://www.vialogi.com sur Vercel), force le redirectTo Supabase — évite mismatch www/apex ou headers proxy. */
+function getPublicOrigin(request: Request): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  if (fromEnv) return fromEnv;
+  return getOrigin(request);
+}
+
 export async function POST(request: Request) {
   try {
     const raw = (await request.json()) as Body;
@@ -35,51 +40,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const supabase = createSupabaseServiceRoleClientIfConfigured();
-    if (!supabase) {
-      console.error("forgot-password: missing SUPABASE_SERVICE_ROLE_KEY");
-      return NextResponse.json({ ok: true });
-    }
-
-    const origin = getOrigin(request);
+    const supabase = createSupabaseAnonServerClient();
+    const origin = getPublicOrigin(request);
     const redirectTo = `${origin}/${locale}/reset-password`;
 
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: "recovery",
-      email,
-      options: { redirectTo },
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
     });
 
-    if (error || !data?.properties?.hashed_token) {
-      console.error("forgot-password generateLink:", error?.message);
-      return NextResponse.json({ ok: true });
+    if (error) {
+      console.error("forgot-password resetPasswordForEmail:", error.message, {
+        redirectTo,
+      });
+      // Même réponse pour toutes les erreurs (config, rate limit, SMTP…) — pas d’énumération utilisateur.
+      return NextResponse.json(
+        { ok: false },
+        { status: 503 },
+      );
     }
-
-    const tokenHash = data.properties.hashed_token;
-    const resetUrl = `${redirectTo}?token=${encodeURIComponent(tokenHash)}`;
-
-    const apiKey = process.env.RESEND_API_KEY?.trim();
-    if (!apiKey) {
-      console.error("forgot-password: missing RESEND_API_KEY");
-      return NextResponse.json({ ok: true });
-    }
-
-    const resend = new Resend(apiKey);
-
-    const subject =
-      locale === "ar"
-        ? "استرجاع كلمة السر - فيالوجي"
-        : "Réinitialisation de votre mot de passe - ViaLogi";
-
-    const from =
-      process.env.RESEND_FROM?.trim() || "ViaLogi <onboarding@resend.dev>";
-
-    await resend.emails.send({
-      from,
-      to: email,
-      subject,
-      react: ResetPasswordEmail({ locale, resetUrl }),
-    });
 
     return NextResponse.json({ ok: true });
   } catch (e) {
@@ -87,4 +65,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 }
-

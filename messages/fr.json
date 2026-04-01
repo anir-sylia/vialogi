@@ -179,6 +179,7 @@
     "forgotSubmit": "Envoyer le lien",
     "forgotSubmitting": "Envoi…",
     "forgotSuccess": "Si un compte existe pour cet e-mail, un lien de réinitialisation a été envoyé.",
+    "forgotSendFailed": "L’envoi a échoué. Réessayez plus tard ou vérifiez votre connexion.",
     "resetTitle": "Nouveau mot de passe",
     "resetSubtitle": "Choisissez un nouveau mot de passe pour votre compte.",
     "resetSubmit": "Mettre à jour",
