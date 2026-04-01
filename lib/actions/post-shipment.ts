@@ -69,6 +69,18 @@ function isInvalidServiceRoleOrJwtError(err: {
   );
 }
 
+const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function utcTodayYmd(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isValidYmd(s: string): boolean {
+  if (!YMD_RE.test(s)) return false;
+  const t = Date.parse(`${s}T12:00:00.000Z`);
+  return !Number.isNaN(t);
+}
+
 function fail(
   locale: string,
   code:
@@ -76,6 +88,7 @@ function fail(
     | "invalid_weight"
     | "invalid_price"
     | "invalid_photo"
+    | "invalid_dates"
     | "db"
     | "profile_required"
     | "rls_denied"
@@ -203,6 +216,16 @@ export async function submitShipment(formData: FormData) {
     return fail(locale, "invalid_price");
   }
 
+  const pickupRaw = String(formData.get("pickup_available_from") ?? "").trim();
+  const deliverRaw = String(formData.get("deliver_by") ?? "").trim();
+  if (!isValidYmd(pickupRaw) || !isValidYmd(deliverRaw)) {
+    return fail(locale, "invalid_dates");
+  }
+  const today = utcTodayYmd();
+  if (pickupRaw < today || deliverRaw < pickupRaw) {
+    return fail(locale, "invalid_dates");
+  }
+
   if (!isSupabasePublicEnvConfigured()) {
     return fail(locale, "env");
   }
@@ -257,6 +280,8 @@ export async function submitShipment(formData: FormData) {
       weight_kg: weight,
       price,
       status: "open" as const,
+      pickup_available_from: pickupRaw,
+      deliver_by: deliverRaw,
       ...(parcel_description ? { parcel_description } : {}),
       ...(user ? { user_id: user.id } : {}),
     };

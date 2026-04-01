@@ -1,3 +1,5 @@
+import { format, parseISO } from "date-fns";
+import { arSA, fr } from "date-fns/locale";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -60,8 +62,22 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   }
 
   const t = await getTranslations("shipmentDetail");
+  const tPost = await getTranslations("postForm");
   const to = await getTranslations("offers");
   const tr = await getTranslations("reviews");
+
+  const dateLocale = locale === "ar" ? arSA : fr;
+  const dateRangeText =
+    shipment.pickup_available_from && shipment.deliver_by
+      ? tPost("dateRangeBetween", {
+          from: format(parseISO(shipment.pickup_available_from), "d MMM", {
+            locale: dateLocale,
+          }),
+          to: format(parseISO(shipment.deliver_by), "d MMM yyyy", {
+            locale: dateLocale,
+          }),
+        })
+      : null;
 
   let ownerProfile: Profile | null = null;
   if (shipment.user_id) {
@@ -221,6 +237,17 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
             </span>
             <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--text-primary)]">
               {shipment.parcel_description.trim()}
+            </p>
+          </div>
+        ) : null}
+
+        {dateRangeText ? (
+          <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/40 px-4 py-3">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              {t("dateWindow")}
+            </span>
+            <p className="mt-2 text-base font-medium text-[var(--text-primary)]">
+              {dateRangeText}
             </p>
           </div>
         ) : null}

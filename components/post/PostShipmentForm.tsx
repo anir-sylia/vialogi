@@ -9,6 +9,7 @@ import {
   NominatimAutocomplete,
   type GeocodeResult,
 } from "@/components/post/NominatimAutocomplete";
+import { ShipmentDateRangeFields } from "@/components/post/ShipmentDateRangeFields";
 
 const PostShipmentRoutingMap = dynamic(
   () => import("@/components/post/PostShipmentRoutingMap"),
@@ -140,6 +141,8 @@ export function PostShipmentForm({ locale, serverError }: Props) {
               )}
             </div>
           ) : null}
+
+          <ShipmentDateRangeFields />
 
           <div>
             <label

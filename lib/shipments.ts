@@ -19,6 +19,10 @@ export type ShipmentRow = {
   removal_reason: string | null;
   parcel_photo_url: string | null;
   parcel_description: string | null;
+  /** ISO date `YYYY-MM-DD` — premier jour de retrait possible. */
+  pickup_available_from: string | null;
+  /** ISO date `YYYY-MM-DD` — échéance de livraison. */
+  deliver_by: string | null;
 };
 
 export const PUBLIC_SHIPMENT_STATUSES = ["open", "assigned", "completed"] as const;
@@ -77,13 +81,9 @@ export async function listShipments(
       return [] as ShipmentRow[];
     }
 
-    return (data ?? []).map((r) => ({
-      ...(r as ShipmentRow),
-      parcel_photo_url:
-        (r as { parcel_photo_url?: string | null }).parcel_photo_url ?? null,
-      parcel_description:
-        (r as { parcel_description?: string | null }).parcel_description ?? null,
-    })) as ShipmentRow[];
+    return (data ?? []).map((r) =>
+      mapShipmentRow(r as Record<string, unknown>),
+    );
   } catch (e) {
     console.error("listShipments:", e);
     return [] as ShipmentRow[];
@@ -182,6 +182,9 @@ function mapShipmentRow(data: Record<string, unknown>): ShipmentRow {
     removal_reason: (data.removal_reason as string | null) ?? null,
     parcel_photo_url: (data.parcel_photo_url as string | null) ?? null,
     parcel_description: (data.parcel_description as string | null) ?? null,
+    pickup_available_from:
+      (data.pickup_available_from as string | null) ?? null,
+    deliver_by: (data.deliver_by as string | null) ?? null,
   };
 }
 

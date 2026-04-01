@@ -16,6 +16,7 @@ const errorCodes = [
   "invalid_weight",
   "invalid_price",
   "invalid_photo",
+  "invalid_dates",
   "db",
   "profile_required",
   "rls_denied",
