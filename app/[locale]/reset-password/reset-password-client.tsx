@@ -20,6 +20,8 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
 
   const [verifying, setVerifying] = useState(true);
   const [invalid, setInvalid] = useState(false);
+  /** Lien refusé par Supabase dans le hash (#error / otp_expired). */
+  const [fromEmailHashError, setFromEmailHashError] = useState(false);
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
@@ -31,6 +33,28 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
     let subscription: { unsubscribe: () => void } | null = null;
 
     async function run() {
+      if (typeof window !== "undefined") {
+        const raw = window.location.hash.replace(/^#/, "");
+        if (raw) {
+          const p = new URLSearchParams(raw);
+          if (p.get("error") || p.get("error_code")) {
+            if (!cancelled) {
+              const desc = (p.get("error_description") ?? "").toLowerCase();
+              setFromEmailHashError(
+                p.get("error_code") === "otp_expired" ||
+                  desc.includes("expired") ||
+                  desc.includes("invalid"),
+              );
+              setInvalid(true);
+              setVerifying(false);
+              const path = window.location.pathname + window.location.search;
+              window.history.replaceState(null, "", path);
+            }
+            return;
+          }
+        }
+      }
+
       if (token) {
         try {
           const { error } = await supabase.auth.verifyOtp({
@@ -129,7 +153,7 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
         className="mt-8 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
         role="alert"
       >
-        {t("resetInvalid")}
+        {fromEmailHashError ? t("resetOtpExpired") : t("resetInvalid")}
       </div>
     );
   }
