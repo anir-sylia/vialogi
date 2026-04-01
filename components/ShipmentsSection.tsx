@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { shipmentDateRangeParts } from "@/lib/format-shipment-date-range";
 import {
   listShipments,
   listShipmentsForAuthenticatedOwner,
@@ -49,6 +50,7 @@ export async function ShipmentsSection({
   mode = "public",
 }: Props) {
   const t = await getTranslations("shipments");
+  const tPost = await getTranslations("postForm");
   const tDetail = await getTranslations("shipmentDetail");
   const shipments =
     mode === "mine"
@@ -100,6 +102,11 @@ export async function ShipmentsSection({
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {shipments.map((s: ShipmentRow) => {
             const count = offerCounts[s.id] ?? 0;
+            const dateRange = shipmentDateRangeParts(
+              s.pickup_available_from,
+              s.deliver_by,
+              locale,
+            );
             return (
               <li key={s.id}>
                 <article className="flex h-full flex-col rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -144,6 +151,11 @@ export async function ShipmentsSection({
                             {s.destination}
                           </span>
                         </div>
+                        {dateRange ? (
+                          <p className="text-sm leading-snug text-slate-500 dark:text-slate-400">
+                            {tPost("dateRangeBetween", dateRange)}
+                          </p>
+                        ) : null}
                       </div>
                       {count > 0 && (
                         <span className="flex h-6 min-w-[1.5rem] shrink-0 items-center justify-center rounded-full bg-[var(--brand)] px-2 text-xs font-bold text-white" title={t("offersCount", { count })}>
@@ -183,9 +195,11 @@ export async function ShipmentsSection({
                         </span>
                       </span>
                     </div>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      {formatDate(s.created_at, locale)}
-                    </p>
+                    {dateRange ? null : (
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {formatDate(s.created_at, locale)}
+                      </p>
+                    )}
                   </div>
                   <div className="mt-4 shrink-0 border-t border-[var(--border)] pt-4">
                     <Link

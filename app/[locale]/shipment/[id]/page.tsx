@@ -1,9 +1,8 @@
-import { format, parseISO } from "date-fns";
-import { arSA, fr } from "date-fns/locale";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
+import { shipmentDateRangeParts } from "@/lib/format-shipment-date-range";
 import { getShipmentById } from "@/lib/shipments";
 import {
   getProfile,
@@ -66,18 +65,14 @@ export default async function ShipmentDetailPage({ params, searchParams }: Props
   const to = await getTranslations("offers");
   const tr = await getTranslations("reviews");
 
-  const dateLocale = locale === "ar" ? arSA : fr;
-  const dateRangeText =
-    shipment.pickup_available_from && shipment.deliver_by
-      ? tPost("dateRangeBetween", {
-          from: format(parseISO(shipment.pickup_available_from), "d MMM", {
-            locale: dateLocale,
-          }),
-          to: format(parseISO(shipment.deliver_by), "d MMM yyyy", {
-            locale: dateLocale,
-          }),
-        })
-      : null;
+  const dateRangeParts = shipmentDateRangeParts(
+    shipment.pickup_available_from,
+    shipment.deliver_by,
+    locale,
+  );
+  const dateRangeText = dateRangeParts
+    ? tPost("dateRangeBetween", dateRangeParts)
+    : null;
 
   let ownerProfile: Profile | null = null;
   if (shipment.user_id) {

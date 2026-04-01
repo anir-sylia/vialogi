@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { shipmentDateRangeParts } from "@/lib/format-shipment-date-range";
 import type { ShipmentRow } from "@/lib/shipments";
 
 function weightToSizeLetter(kg: number): string {
@@ -40,7 +41,13 @@ type Props = {
 
 export function TransportShipmentCard({ shipment: s }: Props) {
   const t = useTranslations("searchRoute");
+  const tPost = useTranslations("postForm");
   const locale = useLocale();
+  const dateRange = shipmentDateRangeParts(
+    s.pickup_available_from,
+    s.deliver_by,
+    locale,
+  );
 
   const title =
     s.parcel_description?.trim() ||
@@ -76,11 +83,17 @@ export function TransportShipmentCard({ shipment: s }: Props) {
             <p className="mt-1.5 text-sm font-medium leading-snug text-[var(--text-primary)]">
               {s.destination}
             </p>
-            <p className="mt-3 text-sm text-[var(--text-muted)]">
-              {t("publishedOn", {
-                date: formatPublished(s.created_at, locale),
-              })}
-            </p>
+            {dateRange ? (
+              <p className="mt-3 text-sm leading-snug text-slate-500 dark:text-slate-400">
+                {tPost("dateRangeBetween", dateRange)}
+              </p>
+            ) : (
+              <p className="mt-3 text-sm text-[var(--text-muted)]">
+                {t("publishedOn", {
+                  date: formatPublished(s.created_at, locale),
+                })}
+              </p>
+            )}
             <div className="mt-3 flex justify-end">
               <span className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-muted)] text-xs font-bold uppercase tracking-wide text-[var(--text-primary)]">
                 {weightToSizeLetter(Number(s.weight_kg))}
