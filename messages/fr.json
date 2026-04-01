@@ -247,7 +247,7 @@
   },
   "shipments": {
     "heading": "Envois disponibles",
-    "subheading": "Données mises à jour en temps réel. Sans recherche : les 20 derniers envois. Avec une ville : jusqu'à 50 annonces dont le départ correspond.",
+    "subheading": "Données mises à jour en temps réel. Sans filtre : toutes les annonces publiques visibles. Avec une ville : uniquement celles dont le départ correspond.",
     "parcelPhotoAlt": "Photo du colis",
     "parcelDescription": "Détail du colis",
     "cardRoute": "Trajet",

@@ -40,8 +40,11 @@ export function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
-const DEFAULT_HOME_LIMIT = 20;
-const SEARCH_RESULTS_LIMIT = 50;
+/**
+ * Plafond côté app pour les listes publiques (accueil, recherche ville, trajet).
+ * PostgREST / Supabase peut imposer un max inférieur (ex. 1000) selon le projet.
+ */
+const PUBLIC_SHIPMENTS_LIST_MAX = 10_000;
 
 /**
  * Latest shipments from Supabase. With a search term, filters `origin`
@@ -57,9 +60,7 @@ export async function listShipments(
     const q = normalizeMoroccoCitySearchTerm(search ?? "");
 
     const hasSearch = q.length > 0;
-    const limit =
-      options?.limit ??
-      (hasSearch ? SEARCH_RESULTS_LIMIT : DEFAULT_HOME_LIMIT);
+    const limit = options?.limit ?? PUBLIC_SHIPMENTS_LIST_MAX;
 
     // `*` évite l’erreur si la colonne `parcel_photo_url` n’existe pas encore (migration non appliquée).
     let query = supabase
@@ -101,7 +102,7 @@ export async function listShipmentsForTransportSearch(
 ): Promise<ShipmentRow[]> {
   try {
     const supabase = createSupabaseAnonServerClient();
-    const limit = options?.limit ?? 50;
+    const limit = options?.limit ?? PUBLIC_SHIPMENTS_LIST_MAX;
     const o = normalizeMoroccoCitySearchTerm(originSubstr ?? "");
     const d = normalizeMoroccoCitySearchTerm(destinationSubstr ?? "");
 
