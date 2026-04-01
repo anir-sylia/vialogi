@@ -17,6 +17,11 @@ type UserInfo = {
   avatarUrl: string | null;
 } | null;
 
+/** Aligné sur `/post` : client, transporteur et admin peuvent publier. */
+function userCanPost(role: NonNullable<UserInfo>["role"]): boolean {
+  return role === "client" || role === "transporteur" || role === "admin";
+}
+
 function NavProfileAvatarLink({
   userId,
   firstName,
@@ -263,24 +268,8 @@ export function Navbar() {
 
           <LanguageSwitcher />
 
-          {isPostingEnabled() && user?.role === "client" ? (
-            <>
-              <Link
-                href={{ pathname: "/post" }}
-                prefetch={true}
-                className="hidden rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:inline-flex"
-              >
-                {t("postAnnouncement")}
-              </Link>
-              <Link
-                href={{ pathname: "/post" }}
-                prefetch={true}
-                className="inline-flex rounded-lg bg-[var(--brand)] px-3 py-2 text-xs font-semibold text-white shadow-sm sm:hidden"
-              >
-                +
-              </Link>
-            </>
-          ) : isPostingEnabled() && !user ? (
+          {isPostingEnabled() &&
+          (!user ? true : userCanPost(user.role)) ? (
             <>
               <Link
                 href={{ pathname: "/post" }}
@@ -421,7 +410,8 @@ export function Navbar() {
             </div>
           )}
 
-          {isPostingEnabled() && (user?.role === "client" || !user) ? (
+          {isPostingEnabled() &&
+          (!user ? true : userCanPost(user.role)) ? (
             <Link
               href={{ pathname: "/post" }}
               prefetch={true}
