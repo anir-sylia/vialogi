@@ -187,6 +187,7 @@
     "resetInvalid": "Lien invalide ou expiré. Veuillez recommencer.",
     "resetOtpExpired": "Ce lien a expiré ou a déjà été utilisé. Les filtres e-mail ouvrent parfois le lien avant vous : redemandez un e-mail depuis « Mot de passe oublié », ouvrez-le tout de suite, ou copiez le lien et collez-le dans le navigateur (navigation privée).",
     "resetDone": "Mot de passe mis à jour. Vous pouvez vous connecter.",
+    "resetUpdateFailed": "Le mot de passe n’a pas pu être mis à jour (session expirée ou règles trop faibles). Redemandez un lien depuis « Mot de passe oublié ».",
     "resetBackLogin": "Retour à la connexion",
     "errors": {
       "required_fields": "Veuillez remplir tous les champs obligatoires.",

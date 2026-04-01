@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 type Props = {
   locale: "fr" | "ar";
@@ -10,8 +11,13 @@ type Props = {
 const inputCls =
   "w-full rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-[var(--text-primary)] shadow-sm outline-none ring-[var(--brand)] focus:border-[var(--brand)] focus:ring-2";
 
+/**
+ * resetPasswordForEmail doit être appelé depuis le navigateur (PKCE) : le code_verifier
+ * est stocké dans les cookies du client. Un appel serveur (API Route) ne peut pas compléter le lien du mail.
+ */
 export function ForgotPasswordForm({ locale }: Props) {
   const t = useTranslations("auth");
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
@@ -24,15 +30,15 @@ export function ForgotPasswordForm({ locale }: Props) {
     setDone(false);
     setSendFailed(false);
     try {
-      const res = await fetch(
-        `${window.location.origin}/api/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, locale }),
-        },
+      const redirectTo = `${window.location.origin}/${locale}/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo },
       );
-      if (!res.ok) setSendFailed(true);
+      if (error) {
+        console.error("resetPasswordForEmail:", error.message);
+        setSendFailed(true);
+      }
     } catch {
       setSendFailed(true);
     } finally {
@@ -88,4 +94,3 @@ export function ForgotPasswordForm({ locale }: Props) {
     </form>
   );
 }
-

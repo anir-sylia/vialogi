@@ -25,6 +25,7 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
+  const [updateFailed, setUpdateFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +53,54 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
             }
             return;
           }
+          /** Flux implicite : jetons dans le hash (souvent après reset e-mail), pas ?code= PKCE. */
+          const access_token = p.get("access_token");
+          const refresh_token = p.get("refresh_token");
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
+            if (!cancelled) {
+              if (error) {
+                setInvalid(true);
+                setVerifying(false);
+              } else {
+                const path =
+                  window.location.pathname + window.location.search;
+                window.history.replaceState(null, "", path);
+                setInvalid(false);
+                setVerifying(false);
+              }
+            }
+            return;
+          }
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        const authCode = new URLSearchParams(window.location.search).get(
+          "code",
+        );
+        if (authCode) {
+          const { error } = await supabase.auth.exchangeCodeForSession(
+            authCode,
+          );
+          if (!cancelled) {
+            if (error) {
+              setInvalid(true);
+              setVerifying(false);
+            } else {
+              window.history.replaceState(
+                null,
+                "",
+                window.location.pathname,
+              );
+              setInvalid(false);
+              setVerifying(false);
+            }
+          }
+          return;
         }
       }
 
@@ -75,7 +124,7 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
           setInvalid(true);
           setVerifying(false);
         }
-      }, 8000) as number;
+      }, 15000) as number;
 
       const handleReady = () => {
         if (cancelled) return;
@@ -124,10 +173,11 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
     if (pending || verifying || invalid) return;
     if (password.trim().length < 6) return;
     setPending(true);
+    setUpdateFailed(false);
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        setInvalid(true);
+        setUpdateFailed(true);
         return;
       }
       setDone(true);
@@ -160,6 +210,14 @@ export function ResetPasswordClient({ locale, tokenHash }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="mt-8 space-y-5">
+      {updateFailed ? (
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          role="alert"
+        >
+          {t("resetUpdateFailed")}
+        </div>
+      ) : null}
       <div>
         <label
           htmlFor="password"
